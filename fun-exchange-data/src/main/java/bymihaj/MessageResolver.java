@@ -5,6 +5,8 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
+import bymihaj.data.order.LimitOrderRequest;
+import bymihaj.data.order.LimitOrderResponse;
 import bymihaj.data.order.MarketOrderRequest;
 import bymihaj.data.order.MarketOrderResponse;
 import bymihaj.data.order.RejectOrderResponse;
@@ -26,6 +28,8 @@ public class MessageResolver {
         register(MarketOrderRequest.class);
         register(MarketOrderResponse.class);
         register(RejectOrderResponse.class);
+        register(LimitOrderRequest.class);
+        register(LimitOrderResponse.class);
     }
     
     protected void register(Class<?> clazz) {

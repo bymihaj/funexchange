@@ -1,5 +1,6 @@
 package bymihaj;
 
+import bymihaj.data.order.RejectOrderResponse;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -26,9 +27,16 @@ public class TradePane extends HBox {
         HBox orderBookPane = new HBox();
         orderBookPane.getChildren().add(new Label("Order book here"));
         
+        
         TabPane infoPane = new TabPane();
+        infoPane.setMinHeight(200);
+        infoPane.setMinWidth(400);
+        
+        NotificationPane notificationPane = new NotificationPane();
+        conn.subscribe(RejectOrderResponse.class, notificationPane::onReject);
         Tab infoTab = new Tab("Notifications");
         infoTab.setClosable(false);
+        infoTab.setContent(notificationPane);
         infoPane.getTabs().add(infoTab);
         
         VBox holder2 = new VBox();

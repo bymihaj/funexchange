@@ -1,8 +1,13 @@
 package bymihaj;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import bymihaj.data.order.LimitOrderResponse;
 
 public class User {
 
@@ -11,13 +16,15 @@ public class User {
     protected WebSocket webSocket;
     protected MessageResolver resolver;
     protected boolean isLogined;
-    private Bank bank;
+    protected Bank bank;
+    protected Map<Long, LimitOrderResponse> orderMap;
     
     
     public User(WebSocket webSocket, MessageResolver resolver) {
         this.webSocket = webSocket;
         this.resolver = resolver;
         isLogined = false;
+        orderMap = new ConcurrentHashMap<>();
     }
     
     public void send(Object msg) {
@@ -44,5 +51,9 @@ public class User {
 
     public void setBank(Bank bank) {
         this.bank = bank;
+    }
+    
+    public void addOrder(Long id, LimitOrderResponse order) {
+        orderMap.put(id, order);
     }
 }

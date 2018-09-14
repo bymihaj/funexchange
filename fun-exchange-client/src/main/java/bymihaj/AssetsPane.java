@@ -23,7 +23,7 @@ public class AssetsPane extends TableView<PropertyModel> {
         
         setItems(FXCollections.observableArrayList());
         conn.subscribe(AssetsResponse.class, this::onAssetsResponse);
-        //conn.send(new AssetsRequest());
+        conn.send(new AssetsRequest());
         
     }
     

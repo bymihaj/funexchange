@@ -13,6 +13,7 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
 
 public class Server extends WebSocketServer {
@@ -40,6 +41,7 @@ public class Server extends WebSocketServer {
         
         tradeController = new TradeController();
         subscribe(MarketOrderRequest.class, tradeController::onMarketOrder);
+        subscribe(LimitOrderRequest.class, tradeController::onLimitOrder);
         
         rightController = new RightController();
     }

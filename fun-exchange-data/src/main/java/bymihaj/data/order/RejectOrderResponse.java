@@ -7,4 +7,8 @@ public class RejectOrderResponse {
     public RejectOrderResponse(String reason) {
         this.reason = reason;
     }
+    
+    public String getReason() {
+        return reason;
+    }
 }
