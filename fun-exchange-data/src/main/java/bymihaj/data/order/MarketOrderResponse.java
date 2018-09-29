@@ -11,5 +11,9 @@ public class MarketOrderResponse extends MarketOrderRequest {
     public void setFilledAmount(double filledAmount) {
         this.filledAmount = filledAmount;
     }
+    
+    public double getRequiredAmount() {
+    	return getAmount() - getFilledAmount();
+    }
 
 }

@@ -13,8 +13,14 @@ import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.server.WebSocketServer;
 
+import bymihaj.data.order.LimitOrderRequest;
+import bymihaj.data.order.MarketOrderRequest;
+import bymihaj.data.order.OrderSide;
+
 public class SocketEmulation implements WebSocket {
     
+	public final static Instrument DEF_INST = Instrument.STKMON;
+	
     protected WebSocketServer server;
     protected MessageResolver resolver;
     protected List<Object> incomeMessageHistory;
@@ -44,6 +50,50 @@ public class SocketEmulation implements WebSocket {
             }
         }
         return list;
+    }
+    
+    public <T> T last(Class<T> filterClass) {
+    	List<T> list = filter(filterClass);
+    	if(list.isEmpty()) {
+    		return null;
+    	} else {
+    		return list.get(list.size() - 1);
+    	}
+    }
+    
+    public MarketOrderRequest market(double amount, OrderSide side) {
+    	MarketOrderRequest order = new MarketOrderRequest();
+    	order.setAmount(amount);
+    	order.setSide(side);
+    	order.setInstrument(DEF_INST);
+    	send(order);
+    	return order;
+    }
+    
+    public MarketOrderRequest marketSell(double amount) {
+    	return market(amount, OrderSide.SELL);
+    }
+    
+    public MarketOrderRequest marketBuy(double amount) {
+    	return market(amount, OrderSide.BUY);
+    }
+    
+    public LimitOrderRequest limit(double amount, double price, OrderSide side) {
+    	LimitOrderRequest order = new LimitOrderRequest();
+    	order.setAmount(amount);
+    	order.setPrice(price);
+    	order.setSide(side);
+    	order.setInstrument(DEF_INST);
+    	send(order);
+    	return order;
+    }
+    
+    public LimitOrderRequest limitSell(double amount, double price) {
+    	return limit(amount, price, OrderSide.SELL);
+    }
+    
+    public LimitOrderRequest limitBuy(double amount, double price) {
+    	return limit(amount, price, OrderSide.BUY);
     }
 
 
@@ -99,7 +149,7 @@ public class SocketEmulation implements WebSocket {
 
     @Override
     public boolean isOpen() {
-        return false;
+        return true;
     }
 
     @Override

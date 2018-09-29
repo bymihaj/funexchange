@@ -8,6 +8,7 @@ import org.java_websocket.WebSocket;
 
 import bymihaj.LoginResponse.Status;
 
+// TODO totally rework
 public class LoginController {
     
     protected Random random;
@@ -15,12 +16,14 @@ public class LoginController {
     protected Map<WebSocket, User> loginedUser;
     protected Map<String, AccountResponse> allowedAccount;
     protected Map<String, Bank> bankStorage;
+    protected Map<String, User> userStorage;
     
     public LoginController() {
         resolver = new MessageResolver();
         loginedUser = new ConcurrentHashMap<>();
         allowedAccount = new ConcurrentHashMap<>();
         bankStorage = new ConcurrentHashMap<>();
+        userStorage = new ConcurrentHashMap<>();
         random = new Random();
     }
     
@@ -35,18 +38,21 @@ public class LoginController {
     public void onAccountRequest(User user, AccountRequest accountReques) {
         AccountResponse response = generateAccount();
         allowedAccount.put(response.getUser(), response);
+        userStorage.put(response.getUser(),  new User(null, resolver));
         user.send(response);
     }
     
     public void onLoginRequest(User user, LoginRequest loginRequest) {
         AccountResponse allowed = allowedAccount.get(loginRequest.getUser());
         if ( allowed != null && allowed.getPass().equals(loginRequest.getPass())) {
-            loginedUser.put(user.getWebsocket(), user);
-            user.setLogined(true);
-            user.setBank(getBank(loginRequest.getUser()));
+            User realUser = userStorage.get(allowed.getUser());
+        	loginedUser.put(user.getGuestSocket(), realUser);
+        	realUser.setLogined(true);
+        	realUser.addSession(user.getGuestSocket());
+        	realUser.setBank(getBank(loginRequest.getUser()));
             LoginResponse resp = new LoginResponse();
             resp.setStatus(Status.OK);
-            user.send(resp);
+            realUser.send(resp);
         } else {
             LoginResponse resp = new LoginResponse();
             resp.setStatus(Status.FAILED);
@@ -75,6 +81,7 @@ public class LoginController {
         return response;
     }
     
+    // TODO move into user
     public Bank getBank(String user) {
         if (bankStorage.containsKey(user)) {
             return bankStorage.get(user);

@@ -1,16 +1,16 @@
 package bymihaj;
 
-import java.util.List;
+import java.util.Map;
 
 public class AssetsResponse {
 
-    protected List<Property> list;
+    protected Map<Symbol, Property> propertyMap;
     
-    public AssetsResponse(List<Property> list) {
-        this.list = list;
+    public AssetsResponse(Map<Symbol, Property> propertyMap) {
+        this.propertyMap = propertyMap;
     }
     
-    public List<Property> getProperties() {
-        return list;
+    public Map<Symbol, Property> getProperties() {
+        return propertyMap;
     }
 }

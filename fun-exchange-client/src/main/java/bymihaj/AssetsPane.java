@@ -38,7 +38,7 @@ public class AssetsPane extends TableView<PropertyModel> {
     
     public void onAssetsResponse(AssetsResponse response) {
         List<PropertyModel> items = new ArrayList<>();
-        for(Property prop : response.getProperties()) {
+        for(Property prop : response.getProperties().values()) {
             items.add(new PropertyModel(prop));
         }
         getItems().setAll(items);

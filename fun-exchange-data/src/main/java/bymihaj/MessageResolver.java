@@ -9,6 +9,8 @@ import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.LimitOrderResponse;
 import bymihaj.data.order.MarketOrderRequest;
 import bymihaj.data.order.MarketOrderResponse;
+import bymihaj.data.order.OrderStatusRequest;
+import bymihaj.data.order.OrderStatusResponse;
 import bymihaj.data.order.RejectOrderResponse;
 
 public class MessageResolver {
@@ -30,6 +32,8 @@ public class MessageResolver {
         register(RejectOrderResponse.class);
         register(LimitOrderRequest.class);
         register(LimitOrderResponse.class);
+        register(OrderStatusRequest.class);
+        register(OrderStatusResponse.class);
     }
     
     protected void register(Class<?> clazz) {

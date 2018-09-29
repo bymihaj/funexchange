@@ -1,32 +1,30 @@
 package bymihaj;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Bank {
 
     public final static BigDecimal DEF_AMOUNT = new BigDecimal(1000);
     
-    protected Set<Property> assets;
+    protected Map<Symbol,Property> assets;
 
     public Bank() {
-        assets = ConcurrentHashMap.newKeySet();
+        assets = new ConcurrentHashMap<>();
         
         Property mon = new Property();
         mon.setName(Symbol.MON);
         mon.setAmount(DEF_AMOUNT);
-        assets.add(mon);
+        assets.put(Symbol.MON, mon);
         
         Property stk = new Property();
         stk.setName(Symbol.STK);
         stk.setAmount(DEF_AMOUNT);
-        assets.add(stk);
+        assets.put(Symbol.STK, stk);
     }
 
-    public List<Property> getProperties() {
-        return new ArrayList<>(assets);
+    public Map<Symbol,Property> getProperties() {
+        return assets;
     }
 }

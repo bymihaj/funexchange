@@ -2,6 +2,7 @@ package bymihaj;
 
 
 
+import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
 import bymihaj.data.order.OrderSide;
 import javafx.beans.value.ChangeListener;
@@ -79,18 +80,29 @@ public class PlaceOrderPane extends VBox {
     
     public void sellAction(ActionEvent e) {
         validateInput();
-        MarketOrderRequest marketOrderRequest = new MarketOrderRequest();
-        marketOrderRequest.setAmount(Double.parseDouble(amountField.getText()));
-        marketOrderRequest.setSide(OrderSide.SELL);
-        conn.send(marketOrderRequest);
+        conn.send(createOrder(OrderSide.SELL));
     }
     
     public void buyAction(ActionEvent e) {
         validateInput();
-        MarketOrderRequest marketOrderRequest = new MarketOrderRequest();
-        marketOrderRequest.setAmount(Double.parseDouble(amountField.getText()));
-        marketOrderRequest.setSide(OrderSide.BUY);
-        conn.send(marketOrderRequest);
+        conn.send(createOrder(OrderSide.BUY));
+    }
+    
+    protected MarketOrderRequest createOrder(OrderSide side) {
+    	if(limitRb.isSelected()) {
+    		LimitOrderRequest order = new LimitOrderRequest();
+    		order.setAmount(Double.parseDouble(amountField.getText()));
+    		order.setPrice(Double.parseDouble(priceField.getText()));
+    		order.setSide(side);
+    		order.setInstrument(Instrument.STKMON);
+    		return order;
+    	} else {
+    		MarketOrderRequest order = new MarketOrderRequest();
+    		order.setAmount(Double.parseDouble(amountField.getText()));
+    		order.setSide(side);
+    		order.setInstrument(Instrument.STKMON);
+    		return order;
+    	}
     }
     
     public boolean validateInput() {

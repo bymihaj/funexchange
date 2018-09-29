@@ -11,5 +11,5 @@ public class LimitOrderResponse extends MarketOrderResponse {
     public void setPrice(double price) {
         this.price = price;
     }
-
+    
 }

@@ -1,5 +1,9 @@
 package bymihaj;
 
+import bymihaj.data.order.LimitOrderResponse;
+import bymihaj.data.order.MarketOrderResponse;
+import bymihaj.data.order.OrderStatusRequest;
+import bymihaj.data.order.OrderStatusResponse;
 import bymihaj.data.order.RejectOrderResponse;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -38,6 +42,23 @@ public class TradePane extends HBox {
         infoTab.setClosable(false);
         infoTab.setContent(notificationPane);
         infoPane.getTabs().add(infoTab);
+        
+        PendingPane pendingPane = new PendingPane();
+        conn.subscribe(LimitOrderResponse.class, pendingPane::onPending);
+        conn.subscribe(OrderStatusResponse.class, pendingPane::onStatus);
+        Tab pendingTab = new Tab("Pending");
+        pendingTab.setClosable(false);
+        pendingTab.setContent(pendingPane);
+        infoPane.getTabs().add(pendingTab);
+        conn.send(new OrderStatusRequest());
+        
+        FilledPane filledPane = new FilledPane();
+        conn.subscribe(LimitOrderResponse.class, filledPane::onLimit);
+        conn.subscribe(MarketOrderResponse.class, filledPane::onMarket);
+        Tab filledTab = new Tab("Filled");
+        filledTab.setClosable(false);
+        filledTab.setContent(filledPane);
+        infoPane.getTabs().add(filledTab);
         
         VBox holder2 = new VBox();
         holder2.getChildren().addAll(orderBookPane, infoPane);

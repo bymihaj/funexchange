@@ -71,4 +71,8 @@ public class LoginPane extends BorderPane {
         userField.setText(msg.getUser());
         passField.setText(msg.getPass());
     }
+    
+    public String getUser() {
+    	return userField.getText();
+    }
 }

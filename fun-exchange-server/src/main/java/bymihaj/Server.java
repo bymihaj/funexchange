@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
+import bymihaj.data.order.OrderStatusRequest;
 
 public class Server extends WebSocketServer {
     
@@ -42,6 +43,7 @@ public class Server extends WebSocketServer {
         tradeController = new TradeController();
         subscribe(MarketOrderRequest.class, tradeController::onMarketOrder);
         subscribe(LimitOrderRequest.class, tradeController::onLimitOrder);
+        subscribe(OrderStatusRequest.class, tradeController::onOrderStatusRequest);
         
         rightController = new RightController();
     }

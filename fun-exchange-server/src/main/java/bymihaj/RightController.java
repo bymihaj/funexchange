@@ -1,6 +1,7 @@
 package bymihaj;
 
 import bymihaj.data.order.MarketOrderRequest;
+import bymihaj.data.order.OrderStatusRequest;
 
 public class RightController {
     
@@ -13,7 +14,9 @@ public class RightController {
             return user.isLogined && user.getBank() != null;
         } else if(msg instanceof MarketOrderRequest) {
             return user.isLogined && user.getBank() != null;
-        } else {
+        } else if(msg instanceof OrderStatusRequest) {
+        	return user.isLogined && user.getBank() != null;
+        } else {	
             return false;
         } 
     }
