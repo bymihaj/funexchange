@@ -1,8 +1,11 @@
 package bymihaj.data.order;
 
+import java.math.BigDecimal;
+
 public class MarketOrderResponse extends MarketOrderRequest {
     
     private double filledAmount;
+    private double filledPrice;
 
     public double getFilledAmount() {
         return filledAmount;
@@ -13,7 +16,15 @@ public class MarketOrderResponse extends MarketOrderRequest {
     }
     
     public double getRequiredAmount() {
-    	return getAmount() - getFilledAmount();
+    	return BigDecimal.valueOf(getAmount()).subtract(BigDecimal.valueOf(getFilledAmount())).doubleValue();
+    }
+
+    public double getFilledPrice() {
+        return filledPrice;
+    }
+
+    public void setFilledPrice(double filledPrice) {
+        this.filledPrice = filledPrice;
     }
 
 }

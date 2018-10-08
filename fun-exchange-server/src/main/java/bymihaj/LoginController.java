@@ -1,5 +1,8 @@
 package bymihaj;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,6 +93,10 @@ public class LoginController {
             bankStorage.put(user, bank);
             return bank;
         }
+    }
+    
+    public Collection<User> getAllLoginedUser() {
+        return loginedUser.values();
     }
     
 }

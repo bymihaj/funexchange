@@ -2,9 +2,13 @@ package bymihaj;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -12,6 +16,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bymihaj.data.order.CancelOrderRequest;
+import bymihaj.data.order.CancelOrderResponse;
 import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.LimitOrderResponse;
 import bymihaj.data.order.MarketOrderRequest;
@@ -20,6 +26,7 @@ import bymihaj.data.order.OrderSide;
 import bymihaj.data.order.OrderStatusRequest;
 import bymihaj.data.order.OrderStatusResponse;
 import bymihaj.data.order.RejectOrderResponse;
+import bymihaj.data.order.RejectOrderType;
 
 // TODO change bank, add reservation and etc
 // TODO create Map<Double, List<LimitOrderResponse>> as class
@@ -29,24 +36,35 @@ public class TradeController {
 
 	static Logger log = LoggerFactory.getLogger(TradeController.class);
 	
+	public final static int LEVEL_SIZE = 20;
+	
     protected AtomicLong counter = new AtomicLong(1);
     protected Map<LimitOrderResponse, User> orderOfUser;
     protected Map<Double, List<LimitOrderResponse>> sellPool;
     protected Map<Double, List<LimitOrderResponse>> buyPool;
+    protected LoginController loginController;
     
-    public TradeController() {
-    	orderOfUser = new ConcurrentHashMap<>();
+    public TradeController(LoginController loginController) {
+    	this.loginController = loginController;
+        orderOfUser = new ConcurrentHashMap<>();
         sellPool = new ConcurrentHashMap<>();
         buyPool = new ConcurrentHashMap<>();
     }
     
     public void onMarketOrder(User user, MarketOrderRequest moReq) {
+        
+        if(!hasAsset(user, moReq)) {
+            return;
+        }
+        
         Map<Double, List<LimitOrderResponse>> pool;
         if(moReq.getSide().equals(OrderSide.BUY)) {
         	pool = sellPool;
         } else {
         	pool = buyPool;
         }
+        
+        
         
         MarketOrderResponse order = new MarketOrderResponse();
         order.setInstrument(moReq.getInstrument());
@@ -55,17 +73,23 @@ public class TradeController {
         order.setId(counter.getAndIncrement());
         if(pool.isEmpty()) {
         	String rejectText = "No liqudity for " + moReq.getSide() + " " + moReq.getAmount() + "on market";
-            user.send(new RejectOrderResponse(rejectText));
+        	RejectOrderResponse reject = new RejectOrderResponse(rejectText);
+        	reject.setRejectType(RejectOrderType.NO_LIQUIDITY);
+            user.send(reject);
         } else {
-        	if(OrderSide.BUY.equals(order.getSide())) {
-                user.descrease(order.getInstrument().getSecondary(), order.getAmount());
-        	} else {
-        		user.descrease(order.getInstrument().getPrimary(), order.getAmount());
-        	}
-        	
         	marketExecution(order, pool, user);
+        	
+        	if(OrderSide.BUY.equals(order.getSide())) {
+        	    BigDecimal dec = BigDecimal.valueOf(order.getFilledAmount()).multiply(BigDecimal.valueOf( order.getFilledPrice()));
+                user.descrease(order.getInstrument().getSecondary(), dec.doubleValue());
+            } else {
+                user.descrease(order.getInstrument().getPrimary(), order.getFilledAmount());
+            }
+        	
         	user.send(order);
         	user.send(new AssetsResponse(user.getBank().getProperties()));
+        	
+        	broadcastOrderBook();
         }
     }
     
@@ -73,6 +97,9 @@ public class TradeController {
         // TODO
         
         // validation
+        if(!hasAsset(user, loReq)) {
+            return;
+        }
         
         // generate id
         // save by 
@@ -127,6 +154,8 @@ public class TradeController {
         }
         
         user.send(new AssetsResponse(user.getBank().getProperties()));
+        
+        broadcastOrderBook();
     }
     
     public void onOrderStatusRequest(User user, OrderStatusRequest statRequest) {
@@ -140,10 +169,10 @@ public class TradeController {
     	Map<Double, List<LimitOrderResponse>> pool;
     	if(OrderSide.BUY.equals(lor.getSide())) {
             pool = buyPool;
-            orderOfUser.get(lor).descrease(lor.getInstrument().getSecondary(), lor.getAmount());
+            orderOfUser.get(lor).descrease(lor.getInstrument().getSecondary(), lor.getRequiredAmount() * lor.getPrice());
     	} else {
     		pool = sellPool;
-    		orderOfUser.get(lor).descrease(lor.getInstrument().getPrimary(), lor.getAmount());
+    		orderOfUser.get(lor).descrease(lor.getInstrument().getPrimary(), lor.getRequiredAmount());
     	}
     	
     	if(!pool.containsKey(lor.getPrice())) {
@@ -162,22 +191,34 @@ public class TradeController {
     	for(Double priceLevel : prices) {
     		List<LimitOrderResponse> toRemove = new ArrayList<>();
     		for(LimitOrderResponse liq : market.get(priceLevel)) {
-    			BigDecimal filled = new BigDecimal(Math.min(order.getRequiredAmount(), liq.getRequiredAmount()));
-    			order.setFilledAmount(order.getFilledAmount() + filled.doubleValue());
+    			BigDecimal filled = BigDecimal.valueOf(order.getRequiredAmount()).min(BigDecimal.valueOf(liq.getRequiredAmount()));
+    		    order.setFilledAmount(BigDecimal.valueOf(order.getFilledAmount()).add(filled).doubleValue());
+    			order.setFilledPrice(priceLevel);
     			
     			log.info("Match amount {} for #{} {} and #{} {}", filled.toPlainString(), order.getId(), order.getSide(), liq.getId(), liq.getSide());
     			
-    			liq.setFilledAmount(liq.getFilledAmount() + filled.doubleValue());
+    			liq.setFilledAmount(BigDecimal.valueOf(liq.getFilledAmount()).add(filled).doubleValue());
     			User liqudityPrivider = orderOfUser.get(liq);
     			if(OrderSide.BUY.equals(liq.getSide()) ) {
-    				initUser.increase(liq.getInstrument().getSecondary(), filled.doubleValue());
-    				liqudityPrivider.increase(liq.getInstrument().getPrimary(), filled.doubleValue());
+    			    BigDecimal initInc = BigDecimal.valueOf(filled.doubleValue()).multiply(BigDecimal.valueOf(priceLevel.doubleValue()));
+    				initUser.increase(liq.getInstrument().getSecondary(), initInc.doubleValue());
+    				liqudityPrivider.increase(liq.getInstrument().getPrimary(), filled.doubleValue() );
     			} else {
     				initUser.increase(liq.getInstrument().getPrimary(), filled.doubleValue());
-    				liqudityPrivider.increase(liq.getInstrument().getSecondary(), filled.doubleValue());
+    				BigDecimal liqInc = BigDecimal.valueOf(filled.doubleValue()).multiply(BigDecimal.valueOf(priceLevel.doubleValue()));
+    				liqudityPrivider.increase(liq.getInstrument().getSecondary(), liqInc.doubleValue());
     			}
     			liqudityPrivider.send(liq);
     			liqudityPrivider.send(new AssetsResponse(liqudityPrivider.getBank().getProperties()));
+    			
+    			TradeHistory history = new TradeHistory();
+    			history.setDateTime(new Date().toString());
+    			history.setAmount(filled.doubleValue());
+    			history.setPrice(priceLevel.doubleValue());
+    			history.setSide(order.getSide());
+    			for(User u : loginController.getAllLoginedUser()) {
+    			    u.send(history);
+    			}
     			
     			if(liq.getRequiredAmount() == 0.0) {
     				toRemove.add(liq);
@@ -189,6 +230,10 @@ public class TradeController {
     		}
     		
     		market.get(priceLevel).removeAll(toRemove);
+    		if(market.get(priceLevel).isEmpty()) {
+    		    market.remove(priceLevel);
+    		}
+    		
     		for(LimitOrderResponse liq : toRemove) {
     			orderOfUser.get(liq).removeOrder(new Long(liq.getId()));
     		}
@@ -199,5 +244,110 @@ public class TradeController {
     		
     		
     	}
+    }
+    
+    protected boolean hasAsset(User user, MarketOrderRequest order) {
+        Instrument instrument = order.getInstrument();
+        Map<Symbol,Property> properties = user.getBank().getProperties();
+        if(OrderSide.BUY.equals(order.getSide())) {
+            if(properties.get(instrument.getSecondary()).getAmount().doubleValue() < order.getAmount()) {
+                String text = "No asset "+instrument.getSecondary();
+                RejectOrderResponse reject = new RejectOrderResponse(text);
+                reject.setRejectType(RejectOrderType.NO_ASSET);
+                user.send(reject);
+                return false;
+            }
+        } else {
+            if(properties.get(instrument.getPrimary()).getAmount().doubleValue() < order.getAmount()) {
+                String text = "No asset "+instrument.getPrimary();
+                RejectOrderResponse reject = new RejectOrderResponse(text);
+                reject.setRejectType(RejectOrderType.NO_ASSET);
+                user.send(reject);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public void onCancelOrderRequest(User user, CancelOrderRequest cancel) {
+        Optional<LimitOrderResponse> optionalOrder =user.getAllOrders().stream().filter( p -> p.getId() == cancel.getId()).findFirst();
+        if(!optionalOrder.isPresent()) {
+            RejectOrderResponse reject = new RejectOrderResponse("Order #"+cancel.getId()+" not found");
+            reject.setRejectType(RejectOrderType.NO_ID);
+            user.send(reject);
+            return;
+        } else {
+            LimitOrderResponse order = optionalOrder.get();
+            user.removeOrder(order.getId());
+            orderOfUser.remove(order);
+            double priceLevel = order.getPrice();
+            if(OrderSide.BUY.equals(order.getSide())) {
+                buyPool.get(priceLevel).remove(order);
+                if(buyPool.get(priceLevel).isEmpty()) {
+                    buyPool.remove(priceLevel);
+                }
+            } else {
+                sellPool.get(order.getPrice()).remove(order);
+                if(sellPool.get(priceLevel).isEmpty()) {
+                    sellPool.remove(priceLevel);
+                }
+            }
+            
+            CancelOrderResponse response = new CancelOrderResponse();
+            response.setId(cancel.getId());
+            user.send(response);
+            
+            OrderStatusResponse resp = new OrderStatusResponse();
+            resp.getOrders().addAll(user.getAllOrders());
+            user.send(resp);
+        }
+        
+    }
+    
+    protected OrderBook packOrderBook() {
+        OrderBook book = new OrderBook();
+        
+        if(!buyPool.isEmpty()) {
+            List<Double> buyeLevels = new ArrayList<>(buyPool.keySet());
+            Collections.sort(buyeLevels);
+            Collections.reverse(buyeLevels);
+            buyeLevels = buyeLevels.subList(0, Math.min(LEVEL_SIZE, buyeLevels.size()));
+            for(Double level : buyeLevels) {
+                double amount = 0;
+                for(LimitOrderResponse order : buyPool.get(level)) {
+                    amount = amount + order.getRequiredAmount();
+                }
+                book.getBuyLevels().put(level, amount);
+            }
+        }
+        
+        if(!sellPool.isEmpty()) {
+            List<Double> sellLevels = new ArrayList<>(sellPool.keySet());
+            Collections.sort(sellLevels);
+            
+            sellLevels = sellLevels.subList(0, Math.min(LEVEL_SIZE, sellLevels.size()));
+            for(Double level : sellLevels) {
+                double amount = 0;
+                for(LimitOrderResponse order : sellPool.get(level)) {
+                    amount = amount + order.getRequiredAmount();
+                }
+                book.getSellLevels().put(level, amount);
+            }
+        }
+        
+        return book;
+    }
+    
+    
+    public void broadcastOrderBook() {
+        OrderBook book = packOrderBook();
+        for(User user : loginController.getAllLoginedUser()) {
+            user.send(book);
+        }
+    }
+    
+    public void onOrderBookRequest(User user, OrderBookRequest request) {
+        OrderBook book = packOrderBook();
+        user.send(book);
     }
 }

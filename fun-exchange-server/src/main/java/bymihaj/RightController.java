@@ -1,5 +1,6 @@
 package bymihaj;
 
+import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
 import bymihaj.data.order.OrderStatusRequest;
 
@@ -16,6 +17,10 @@ public class RightController {
             return user.isLogined && user.getBank() != null;
         } else if(msg instanceof OrderStatusRequest) {
         	return user.isLogined && user.getBank() != null;
+        } else if(msg instanceof CancelOrderRequest) {
+            return user.isLogined && user.getBank() != null;
+        } else if(msg instanceof OrderBookRequest) {
+            return user.isLogined && user.getBank() != null;
         } else {	
             return false;
         } 

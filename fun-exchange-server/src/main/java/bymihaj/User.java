@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bymihaj.data.order.LimitOrderResponse;
+import bymihaj.data.order.MarketOrderResponse;
+import bymihaj.data.order.OrderSide;
 
 // TODO split to guest and real user
 public class User {
@@ -88,11 +90,28 @@ public class User {
     
     public void increase(Symbol symbol, double amount) {
     	Property prop = bank.getProperties().get(symbol);
-    	prop.setAmount(prop.getAmount().add(new BigDecimal(amount)));
+    	prop.setAmount(prop.getAmount().add(BigDecimal.valueOf(amount)));
     }
     
     public void descrease(Symbol symbol, double amount) {
     	Property prop = bank.getProperties().get(symbol);
-    	prop.setAmount(prop.getAmount().subtract(new BigDecimal(amount)));
+    	prop.setAmount(prop.getAmount().subtract(BigDecimal.valueOf(amount)));
     }
+    /*
+    public void increase(MarketOrderResponse order) {
+        Symbol symbol;
+        if( OrderSide.BUY.equals(order.getSide())) {
+            symbol = order.getInstrument().getSecondary();
+        } else {
+            symbol = order.getInstrument().getPrimary();
+        }
+        Property prop = bank.getProperties().get(symbol);
+        prop.setAmount(prop.getAmount().add(new BigDecimal(order.getRequiredAmount())));
+    }
+    
+    public void descrease(Symbol symbol, double amount) {
+        Property prop = bank.getProperties().get(symbol);
+        prop.setAmount(prop.getAmount().subtract(new BigDecimal(amount)));
+    }
+    */
 }

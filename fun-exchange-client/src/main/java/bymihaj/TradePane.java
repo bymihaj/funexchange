@@ -28,9 +28,7 @@ public class TradePane extends HBox {
         
         getChildren().add(holder1);
         
-        HBox orderBookPane = new HBox();
-        orderBookPane.getChildren().add(new Label("Order book here"));
-        
+        HBox orderBookPane = new OrderBookPane(conn);
         
         TabPane infoPane = new TabPane();
         infoPane.setMinHeight(200);
@@ -66,9 +64,8 @@ public class TradePane extends HBox {
         getChildren().add(holder2);
         
         
-        VBox historyPane = new VBox();
-        historyPane.getChildren().add(new Label("History here"));
-        
+        HistoryPane historyPane = new HistoryPane();
+        conn.subscribe(TradeHistory.class, historyPane::onHistory);
         getChildren().add(historyPane);
        
         
