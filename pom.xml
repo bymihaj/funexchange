@@ -11,5 +11,6 @@
     <module>fun-exchange-server</module>
     <module>fun-exchange-client</module>
     <module>fun-exchange-integration</module>
+    <module>fun-exchange-web</module>
   </modules>
 </project>

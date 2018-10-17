@@ -16,6 +16,7 @@ import org.java_websocket.server.WebSocketServer;
 import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
 import bymihaj.data.order.OrderSide;
+import bymihaj.jvm.GsonParser;
 
 public class SocketEmulation implements WebSocket {
     
@@ -27,7 +28,7 @@ public class SocketEmulation implements WebSocket {
     
     public SocketEmulation(WebSocketServer server) {
         this.server = server;
-        resolver = new MessageResolver();
+        resolver = new MessageResolver(new GsonParser());
         incomeMessageHistory = new ArrayList<>();
     }
     

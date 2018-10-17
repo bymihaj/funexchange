@@ -9,6 +9,7 @@ import java.util.Map;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import bymihaj.jvm.GsonParser;
 import javafx.application.Platform;
 
 public class Connection extends WebSocketClient {
@@ -20,7 +21,7 @@ public class Connection extends WebSocketClient {
     
     public Connection(URI serverUri) {
         super(serverUri);
-        resolver = new MessageResolver();
+        resolver = new MessageResolver(new GsonParser());
         subscirbers = new HashMap<>();
     }
     

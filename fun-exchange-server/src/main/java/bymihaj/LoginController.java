@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.java_websocket.WebSocket;
 
 import bymihaj.LoginResponse.Status;
+import bymihaj.jvm.GsonParser;
 
 // TODO totally rework
 public class LoginController {
@@ -22,7 +23,7 @@ public class LoginController {
     protected Map<String, User> userStorage;
     
     public LoginController() {
-        resolver = new MessageResolver();
+        resolver = new MessageResolver(new GsonParser());
         loginedUser = new ConcurrentHashMap<>();
         allowedAccount = new ConcurrentHashMap<>();
         bankStorage = new ConcurrentHashMap<>();

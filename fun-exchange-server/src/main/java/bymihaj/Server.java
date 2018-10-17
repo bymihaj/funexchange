@@ -17,6 +17,7 @@ import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
 import bymihaj.data.order.OrderStatusRequest;
+import bymihaj.jvm.GsonParser;
 
 public class Server extends WebSocketServer {
     
@@ -32,7 +33,7 @@ public class Server extends WebSocketServer {
     
     public Server(InetSocketAddress address) {
         super(address);
-        resolver = new MessageResolver();
+        resolver = new MessageResolver(new GsonParser());
         random = new Random();
         subscribers = new HashMap<>();
         

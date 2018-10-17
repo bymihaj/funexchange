@@ -17,11 +17,11 @@ import bymihaj.data.order.RejectOrderResponse;
 
 public class MessageResolver {
     
-    protected Gson gson;
+    protected IJsonParser parser;
     protected Map<String, Class<?>> supportedMessages;
     
-    public MessageResolver() {
-        gson = new Gson();
+    public MessageResolver(IJsonParser parser) {
+        this.parser = parser;
         supportedMessages = new HashMap<>();
         register(AccountRequest.class);
         register(AccountResponse.class);
@@ -48,10 +48,10 @@ public class MessageResolver {
     }
     
     public <T> T resolve(String json) {
-        MessageHolder holder = gson.fromJson(json, MessageHolder.class);
-        String name = holder.name;
+        MessageHolder holder = parser.fromJson(json, MessageHolder.class);
+        String name = holder.getName();
         if( supportedMessages.containsKey(name) ) {
-            return gson.<T>fromJson(holder.object, supportedMessages.get(name));
+            return parser.<T>fromJson(holder.getObject(), supportedMessages.get(name));
         } else {
             throw new IllegalArgumentException("Unregsitered class: "+name);
         }
@@ -59,9 +59,9 @@ public class MessageResolver {
     
     public String pack(Object object) {
         MessageHolder holder = new MessageHolder();
-        holder.name = object.getClass().getSimpleName();
-        holder.object = gson.toJson(object);
-        return gson.toJson(holder);
+        holder.setName(object.getClass().getSimpleName());
+        holder.setObject(parser.toJson(object));
+        return parser.toJson(holder);
     }
 
 }
