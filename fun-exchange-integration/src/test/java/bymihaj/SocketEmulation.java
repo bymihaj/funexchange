@@ -135,7 +135,7 @@ public class SocketEmulation implements WebSocket {
 
     @Override
     public InetSocketAddress getRemoteSocketAddress() {
-        return null;
+        return new InetSocketAddress("127.0.0.1", 1111);
     }
 
     @Override

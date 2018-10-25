@@ -54,22 +54,28 @@ public class Server extends WebSocketServer {
     
     @Override
     public void onOpen(WebSocket paramWebSocket, ClientHandshake paramClientHandshake) {
-        log.info("onOpen");
+        log.info("Opened session {}:{}", paramWebSocket.getRemoteSocketAddress().getAddress().getHostAddress(), paramWebSocket.getRemoteSocketAddress().getPort());
     }
 
     @Override
     public void onClose(WebSocket paramWebSocket, int paramInt, String paramString, boolean paramBoolean) {
-        log.info("onClose");            
+        User user = loginController.getUser(paramWebSocket);
+        log.info("Session {}({}:{}) disconnected", user.identity(), paramWebSocket.getRemoteSocketAddress().getAddress().getHostAddress(), paramWebSocket.getRemoteSocketAddress().getPort());    
+        user.removeSession(paramWebSocket);
+        loginController.removeSession(paramWebSocket);
     }
 
     // RightController
     // LoginController
     @Override
     public void onMessage(WebSocket paramWebSocket, String paramString) {
-        log.info("onMessage: {}", paramString);    
-        Object income = resolver.resolve(paramString);
         
         User user = loginController.getUser(paramWebSocket);
+        String jsonLog = paramString.replace("\\", "");
+        log.info("{}({}:{}) ++ {}", user.identity(), paramWebSocket.getRemoteSocketAddress().getAddress().getHostAddress(), paramWebSocket.getRemoteSocketAddress().getPort(), jsonLog);    
+        Object income = resolver.resolve(paramString);
+        
+        
         if(rightController.allowed(user, income)) {
             if(subscribers.containsKey(income.getClass())) {
                 for(ClientMessageListener<? extends Object> listener : subscribers.get(income.getClass()) ) {

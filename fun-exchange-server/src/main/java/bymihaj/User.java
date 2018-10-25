@@ -26,6 +26,7 @@ public class User {
     protected Bank bank;
     protected Map<Long, LimitOrderResponse> orderMap;
     protected WebSocket guestSocket;
+    protected String userName;
     
     
     public User(WebSocket guestSocket, MessageResolver resolver) {
@@ -38,20 +39,28 @@ public class User {
     
     public void send(Object msg) {
         String json = resolver.pack(msg);
+        String jsonLog = json.replace("\\", "");
         if(!isLogined) {
         	guestSocket.send(json);
+            log.info("  {}({}:{}) -- {}", identity(), guestSocket.getRemoteSocketAddress().getAddress().getHostAddress(), guestSocket.getRemoteSocketAddress().getPort(), jsonLog);
+
         }
         for(WebSocket webSocket : webSockets) {
         	if(webSocket.isOpen()) {
         		webSocket.send(json);
+        		log.info("  {}({}:{}) -- {}", identity(), webSocket.getRemoteSocketAddress().getAddress().getHostAddress(), webSocket.getRemoteSocketAddress().getPort(), jsonLog);
+        	    
             }
         }
-        log.info("Send to {} message {}", this.toString(), json);
     }
     
     // TODO add remove on disconnect
     public void addSession(WebSocket webSocket) {
     	webSockets.add(webSocket);
+    }
+    
+    public void removeSession(WebSocket webSocket) {
+        webSockets.remove(webSocket);
     }
     
     public WebSocket getGuestSocket() {
@@ -97,21 +106,20 @@ public class User {
     	Property prop = bank.getProperties().get(symbol);
     	prop.setAmount(prop.getAmount().subtract(BigDecimal.valueOf(amount)));
     }
-    /*
-    public void increase(MarketOrderResponse order) {
-        Symbol symbol;
-        if( OrderSide.BUY.equals(order.getSide())) {
-            symbol = order.getInstrument().getSecondary();
-        } else {
-            symbol = order.getInstrument().getPrimary();
-        }
-        Property prop = bank.getProperties().get(symbol);
-        prop.setAmount(prop.getAmount().add(new BigDecimal(order.getRequiredAmount())));
-    }
     
-    public void descrease(Symbol symbol, double amount) {
-        Property prop = bank.getProperties().get(symbol);
-        prop.setAmount(prop.getAmount().subtract(new BigDecimal(amount)));
+    public String identity() {
+        if(isLogined()) {
+            return getUserName();
+        } else {
+            return "Guest";
+        }
     }
-    */
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 }

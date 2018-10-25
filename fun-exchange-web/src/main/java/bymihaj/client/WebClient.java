@@ -2,6 +2,8 @@ package bymihaj.client;
 
 import bymihaj.AccountRequest;
 import bymihaj.AccountResponse;
+import bymihaj.LoginResponse;
+import bymihaj.MessageListener;
 import bymihaj.MessageResolver;
 import bymihaj.shared.FieldVerifier;
 
@@ -19,6 +21,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
@@ -50,8 +53,37 @@ public class WebClient implements EntryPoint {
   private final Messages messages = GWT.create(Messages.class);
   
   static Logger log = Logger.getGlobal();
+  
+  protected Connection conn;
+  protected RootPanel mainScreen;
+  protected LoginPane loginPane;
+  
 
   public void onModuleLoad() {
+      
+      conn = new Connection("ws://127.0.0.1:7575");
+      loginPane = new LoginPane(conn);
+      mainScreen = RootPanel.get("allContent");
+      mainScreen.add(loginPane);
+      
+      conn.subscribe(LoginResponse.class, this::onLoginResponse);
+      /*
+      conn.subscribe(LoginResponse.class, new MessageListener<LoginResponse>() {
+
+        @Override
+        public void onMessage(LoginResponse msg) {
+            if(LoginResponse.Status.OK.equals(msg.getStatus())) {
+                MainPane mainPane = new MainPane(conn);
+                mainScreen.remove(loginPane);
+                mainScreen.add(mainPane);
+            } else {
+                Window.alert("Login rejected, wrong user/pass");
+            }
+        }
+      });
+      */
+      
+      /*
       MessageResolver resolver = new MessageResolver(new GwtParser());
       
       Button requestBtn = new Button();
@@ -139,8 +171,6 @@ public class WebClient implements EntryPoint {
           
           @Override
           public void onClick(ClickEvent event) {
-              // TODO Auto-generated method stub
-              
               AccountRequest msg = new AccountRequest();
               String json = resolver.pack(msg);
               ws.send(json);
@@ -150,7 +180,17 @@ public class WebClient implements EntryPoint {
       
        
        ws.connect("ws://127.0.0.1:7575");
-      
+      */
+  }
+  
+  public void onLoginResponse(LoginResponse loginResponse) {
+      if(LoginResponse.Status.OK.equals(loginResponse.getStatus())) {
+          MainPane mainPane = new MainPane(conn);
+          mainScreen.remove(loginPane);
+          mainScreen.add(mainPane);
+      } else {
+          Window.alert("Login rejected, wrong user/pass");
+      }
   }
   
   /**

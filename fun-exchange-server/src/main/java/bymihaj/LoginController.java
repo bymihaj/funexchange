@@ -50,6 +50,7 @@ public class LoginController {
         AccountResponse allowed = allowedAccount.get(loginRequest.getUser());
         if ( allowed != null && allowed.getPass().equals(loginRequest.getPass())) {
             User realUser = userStorage.get(allowed.getUser());
+            realUser.setUserName(loginRequest.getUser());
         	loginedUser.put(user.getGuestSocket(), realUser);
         	realUser.setLogined(true);
         	realUser.addSession(user.getGuestSocket());
@@ -98,6 +99,10 @@ public class LoginController {
     
     public Collection<User> getAllLoginedUser() {
         return loginedUser.values();
+    }
+    
+    public void removeSession(WebSocket webSocket) {
+        loginedUser.remove(webSocket);
     }
     
 }
