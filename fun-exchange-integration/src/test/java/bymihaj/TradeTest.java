@@ -3,6 +3,8 @@ package bymihaj;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -166,7 +168,7 @@ public class TradeTest {
     	client.limitSell(amount, 3.0);
     	client.marketBuy(amount);
     	
-    	AssetsResponse assets = client.filter(AssetsResponse.class).get(2);
+    	AssetsResponse assets = client.last(AssetsResponse.class);
     	Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
     	Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
     }
@@ -443,4 +445,25 @@ public class TradeTest {
         Assert.assertEquals(base + amountBuy, buyer.get(Symbol.STK).getAmount().doubleValue(), 0);
         Assert.assertEquals(base - amountBuy * price, buyer.get(Symbol.MON).getAmount().doubleValue(), 0);
     }
+    
+    @Test
+    public void zeroAmountInOrderbookTest() {
+        double amount = 10;
+        double price = 1;
+        client.limitSell(amount, price);
+        client.limitBuy(amount, price);
+        
+        OrderBook orderbook = client.last(OrderBook.class);
+        Assert.assertTrue(orderbook.getBuyLevels().isEmpty());
+        Assert.assertTrue(orderbook.getSellLevels().isEmpty());
+        
+        List<LimitOrderResponse> orders = client.filter(LimitOrderResponse.class);
+        Assert.assertEquals(price, orders.get(orders.size()-2).getFilledPrice(), 0);
+        Assert.assertEquals(price, orders.get(orders.size()-1).getFilledPrice(), 0);
+        
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
+    }
+    
 }

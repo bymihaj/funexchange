@@ -9,7 +9,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -40,15 +42,15 @@ public class TradeController {
 	
     protected AtomicLong counter = new AtomicLong(1);
     protected Map<LimitOrderResponse, User> orderOfUser;
-    protected Map<Double, List<LimitOrderResponse>> sellPool;
-    protected Map<Double, List<LimitOrderResponse>> buyPool;
+    protected ConcurrentSkipListMap<Double, List<LimitOrderResponse>> sellPool;
+    protected ConcurrentSkipListMap<Double, List<LimitOrderResponse>> buyPool;
     protected LoginController loginController;
     
     public TradeController(LoginController loginController) {
     	this.loginController = loginController;
         orderOfUser = new ConcurrentHashMap<>();
-        sellPool = new ConcurrentHashMap<>();
-        buyPool = new ConcurrentHashMap<>();
+        sellPool = new ConcurrentSkipListMap<>();
+        buyPool = new ConcurrentSkipListMap<>();
     }
     
     public void onMarketOrder(User user, MarketOrderRequest moReq) {
@@ -57,7 +59,7 @@ public class TradeController {
             return;
         }
         
-        Map<Double, List<LimitOrderResponse>> pool;
+        SortedMap<Double, List<LimitOrderResponse>> pool;
         if(moReq.getSide().equals(OrderSide.BUY)) {
         	pool = sellPool;
         } else {
@@ -128,17 +130,20 @@ public class TradeController {
         orderOfUser.put(resp, user);
         user.send(resp);
         
+        // reserve assets
+        if(OrderSide.BUY.equals(resp.getSide())) {
+            orderOfUser.get(resp).descrease(resp.getInstrument().getSecondary(), resp.getRequiredAmount() * resp.getPrice());
+        } else {
+            orderOfUser.get(resp).descrease(resp.getInstrument().getPrimary(), resp.getRequiredAmount());
+        }
+        user.send(new AssetsResponse(user.getBank().getProperties()));
         
         // fill as market order on sliced market
-        Map<Double, List<LimitOrderResponse>> pool;
+        SortedMap<Double, List<LimitOrderResponse>> pool;
         if(resp.getSide().equals(OrderSide.BUY)) {
-        	pool = sellPool.entrySet().stream()
-        			.filter( p -> p.getKey().doubleValue() <= resp.getPrice())
-        			.collect(Collectors.toMap( k -> k.getKey(), v -> v.getValue()));
+            pool = sellPool.subMap(Double.MIN_VALUE, true, resp.getPrice(), true);
         } else {
-        	pool = buyPool.entrySet().stream()
-        			.filter( p -> p.getKey().doubleValue() >= resp.getPrice())
-        			.collect(Collectors.toMap( k -> k.getKey(), v -> v.getValue()));;
+            pool = buyPool.subMap(resp.getPrice(), Double.MAX_VALUE);
         }
         if(!pool.isEmpty()) {
         	marketExecution(resp, pool, user);
@@ -169,10 +174,8 @@ public class TradeController {
     	Map<Double, List<LimitOrderResponse>> pool;
     	if(OrderSide.BUY.equals(lor.getSide())) {
             pool = buyPool;
-            orderOfUser.get(lor).descrease(lor.getInstrument().getSecondary(), lor.getRequiredAmount() * lor.getPrice());
-    	} else {
+        } else {
     		pool = sellPool;
-    		orderOfUser.get(lor).descrease(lor.getInstrument().getPrimary(), lor.getRequiredAmount());
     	}
     	
     	if(!pool.containsKey(lor.getPrice())) {
@@ -181,7 +184,7 @@ public class TradeController {
         pool.get(lor.getPrice()).add(lor);
     }
     
-    protected void marketExecution(MarketOrderResponse order, Map<Double, List<LimitOrderResponse>> market, User initUser) {
+    protected void marketExecution(MarketOrderResponse order, SortedMap<Double, List<LimitOrderResponse>> market, User initUser) {
     	List<Double> prices = new ArrayList<>(market.keySet());
     	Collections.sort(prices);
     	if(OrderSide.SELL.equals(order.getSide())) {
@@ -198,6 +201,7 @@ public class TradeController {
     			log.info("Match amount {} for #{} {} and #{} {}", filled.toPlainString(), order.getId(), order.getSide(), liq.getId(), liq.getSide());
     			
     			liq.setFilledAmount(BigDecimal.valueOf(liq.getFilledAmount()).add(filled).doubleValue());
+    			liq.setFilledPrice(priceLevel);
     			User liqudityPrivider = orderOfUser.get(liq);
     			if(OrderSide.BUY.equals(liq.getSide()) ) {
     			    BigDecimal initInc = BigDecimal.valueOf(filled.doubleValue()).multiply(BigDecimal.valueOf(priceLevel.doubleValue()));
