@@ -14,7 +14,9 @@ public class OrderBookPane extends HorizontalPanel {
     
     public OrderBookPane(Connection conn) {
         sell = new OrderBookSideTable("red");
+        sell.setSize("150px", "490px");
         buy = new OrderBookSideTable("green");
+        buy.setSize("150px", "490px");
         add(sell);
         add(buy);
         conn.subscribe(OrderBook.class, this::onOrderBook);

@@ -1,5 +1,6 @@
 package bymihaj.client;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -29,6 +30,7 @@ public class LoginPane extends VerticalPanel {
             login.setUser(userTbx.getText());
             login.setPass(passTbx.getText());
             conn.send(login);
+            Window.setTitle(userTbx.getText());
         });
         
         Button requestAccountBtn = new Button();

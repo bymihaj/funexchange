@@ -1,6 +1,9 @@
 package bymihaj.client;
 
-import com.google.gwt.user.cellview.client.CellTable;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.view.client.ListDataProvider;
@@ -8,12 +11,13 @@ import com.google.gwt.view.client.ListDataProvider;
 import bymihaj.TradeHistory;
 import bymihaj.data.order.OrderSide;
 
-public class HistoryPane extends CellTable<TradeHistory> {
+public class HistoryPane extends DataGrid<TradeHistory>/*CellTable<TradeHistory> */{
     
     protected ListDataProvider<TradeHistory> provider;
+    protected List<TradeHistory> list;
     
-    // TODO table with scroll, after general design 
     public HistoryPane() {
+        list = new ArrayList<>();
         
         addColumn(new TextColumn<TradeHistory>() {
 
@@ -22,6 +26,7 @@ public class HistoryPane extends CellTable<TradeHistory> {
                 return object.getDateTime();
             }
         }, "Timestamp");
+        setColumnWidth(0, "200px");
         
         addColumn(new TextColumn<TradeHistory>() {
 
@@ -30,6 +35,7 @@ public class HistoryPane extends CellTable<TradeHistory> {
                 return String.valueOf(object.getAmount());
             }
         }, "Amount");
+        setColumnWidth(1, "80px");
         
         addColumn(new TextColumn<TradeHistory>() {
 
@@ -38,6 +44,7 @@ public class HistoryPane extends CellTable<TradeHistory> {
                 return String.valueOf(object.getPrice());
             }
         }, "Price");
+        setColumnWidth(2, "80px");
         
         setRowStyles(new RowStyles<TradeHistory>() {
             
@@ -51,12 +58,13 @@ public class HistoryPane extends CellTable<TradeHistory> {
             }
         });
         
-        provider = new ListDataProvider<>();
-        provider.addDataDisplay(this);
+        setWidth("400px");
+        setHeight("490px");
     }
     
     public void onTradeHistor(TradeHistory trade) {
-        provider.getList().add(trade);
+        list.add(trade);
+        setRowData(list);
     }
 
 }

@@ -1,13 +1,12 @@
 package bymihaj.client;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 import bymihaj.AssetsResponse;
-import bymihaj.OrderBook;
+
 import bymihaj.TradeHistory;
 import bymihaj.data.order.LimitOrderResponse;
 import bymihaj.data.order.MarketOrderResponse;
@@ -23,24 +22,28 @@ public class MainPane extends HorizontalPanel {
         
         DecoratorPanel decOrder = new DecoratorPanel();
         decOrder.setWidget(new OrderPane(conn));
-        add(decOrder);
+        //add(decOrder);
         
         AssetsPane assets = new AssetsPane(conn);
         conn.subscribe(AssetsResponse.class, assets::onAssetsResponse);
         DecoratorPanel decAsset = new DecoratorPanel();
         decAsset.setWidget(assets);
-        add(decAsset);
+        //add(decAsset);
         
         OrderBookPane orderBook = new OrderBookPane(conn);
         DecoratorPanel decOrderBook = new DecoratorPanel();
         decOrderBook.setWidget(orderBook);
-        add(decOrderBook);
+        //add(decOrderBook);
+        
+        
+        
+        
         
         HistoryPane history = new HistoryPane();
         conn.subscribe(TradeHistory.class, history::onTradeHistor);
         DecoratorPanel decHistory = new DecoratorPanel();
         decHistory.setWidget(history);
-        add(decHistory);
+        //add(decHistory);
         
         NotificationTab notificationTab = new NotificationTab();
         conn.subscribe(RejectOrderResponse.class, notificationTab::onReject);
@@ -61,7 +64,16 @@ public class MainPane extends HorizontalPanel {
         
         DecoratorPanel decTab = new DecoratorPanel();
         decTab.setWidget(tabPane);
-        add(decTab);
+        //add(decTab);
+       
+        add(decHistory);
+        add(decOrderBook);
+        
+        VerticalPanel side = new VerticalPanel();
+        side.add(decOrder);
+        side.add(decAsset);
+        side.add(decTab);
+        add(side);
     }
 
 }

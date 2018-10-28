@@ -55,6 +55,7 @@ public class TradeController {
     
     public void onMarketOrder(User user, MarketOrderRequest moReq) {
         
+        // TODO remove as no sense for market order
         if(!hasAsset(user, moReq)) {
             return;
         }
@@ -304,6 +305,17 @@ public class TradeController {
             OrderStatusResponse resp = new OrderStatusResponse();
             resp.getOrders().addAll(user.getAllOrders());
             user.send(resp);
+            
+            
+            // undo assets reservation
+            if(OrderSide.BUY.equals(order.getSide())) {
+                user.increase(order.getInstrument().getSecondary(), order.getRequiredAmount() * order.getPrice());
+            } else {
+                user.increase(order.getInstrument().getPrimary(), order.getRequiredAmount());
+            }
+            user.send(new AssetsResponse(user.getBank().getProperties()));
+            
+            broadcastOrderBook();
         }
         
     }

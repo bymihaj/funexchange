@@ -466,4 +466,76 @@ public class TradeTest {
         Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
     }
     
+    
+    @Test
+    public void noOrderbookAfterCancelTest() {
+        
+        client.limitBuy(10.0, 1.0);
+        LimitOrderResponse registered = client.last(LimitOrderResponse.class);
+        CancelOrderRequest cancel = new CancelOrderRequest();
+        cancel.setId(registered.getId());
+        client.send(cancel);
+        
+        OrderBook orderbook = client.last(OrderBook.class);
+        Assert.assertTrue(orderbook.getBuyLevels().isEmpty());
+    }
+    
+    @Test
+    public void multiLevelMarketExectionTest() {
+        client.limitSell(10, 200.0);
+        client.limitSell(10, 3.0);
+        client.marketBuy(20);
+        
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
+    }
+    
+    @Test
+    public void multiLevelLimitExectionTest() {
+        client.limitSell(10, 200.0);
+        client.limitSell(10, 3.0);
+        client.limitBuy(20, 200);
+        
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
+    }
+    
+    @Test //TODO task number ONE !!!
+    public void overAssetsMarketOrderTest() {
+        SocketEmulation second = new SocketEmulation(server);
+        IntegrationHelper.login(server, second);
+        
+        client.limitSell(10, 10000);
+        second.marketBuy(10);
+        
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
+        
+        AssetsResponse assetsSecond = second.last(AssetsResponse.class);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assetsSecond.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assetsSecond.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
+    }
+    
+    @Test
+    public void cancelPartialFilledOrderTest() {
+        
+        client.limitSell(10.0, 1.0);
+        LimitOrderResponse registered = client.last(LimitOrderResponse.class);
+        client.marketBuy(5.0);
+        CancelOrderRequest cancel = new CancelOrderRequest();
+        cancel.setId(registered.getId());
+        client.send(cancel);
+        
+        OrderBook orderbook = client.last(OrderBook.class);
+        Assert.assertTrue(orderbook.getSellLevels().isEmpty());
+        
+        // TODO REF check zero balance
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
+        Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(), assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
+        
+    }
 }
