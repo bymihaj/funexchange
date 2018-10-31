@@ -1,16 +1,20 @@
 package bymihaj.client;
 
-import com.google.gwt.user.cellview.client.CellTable;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.view.client.ListDataProvider;
+
 
 import bymihaj.data.order.RejectOrderResponse;
 
-public class NotificationTab extends CellTable<String> {
+public class NotificationTab extends DataGrid<String> {
     
-    protected ListDataProvider<String> provider;
+    protected List<String> provider;
     
     public NotificationTab() {
+        provider = new ArrayList<>();
         addColumn(new TextColumn<String>() {
 
             @Override
@@ -18,13 +22,15 @@ public class NotificationTab extends CellTable<String> {
                 return object;
             }
         }, "Text");
+        setColumnWidth(0, "410px");
         
-        provider = new ListDataProvider<>();
-        provider.addDataDisplay(this);
+        setWidth("425px");
+        setHeight("322px");
     }
     
     public void onReject(RejectOrderResponse reject) {
-        provider.getList().add(reject.getReason());
+        provider.add(reject.getReason());
+        setRowData(provider);
     }
     
     

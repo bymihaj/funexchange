@@ -1,10 +1,13 @@
 package bymihaj.client;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.view.client.ListDataProvider;
@@ -14,12 +17,13 @@ import bymihaj.data.order.LimitOrderResponse;
 import bymihaj.data.order.OrderSide;
 import bymihaj.data.order.OrderStatusResponse;
 
-public class PendingTab extends CellTable<LimitOrderResponse> {
+public class PendingTab extends DataGrid<LimitOrderResponse> {
 
     protected Connection conn;
-    protected ListDataProvider<LimitOrderResponse> provider;
+    protected List<LimitOrderResponse> provider;
     
     public PendingTab(Connection conn) {
+        provider = new ArrayList<>();
         this.conn = conn;
         addColumn(new TextColumn<LimitOrderResponse>() {
 
@@ -28,6 +32,7 @@ public class PendingTab extends CellTable<LimitOrderResponse> {
                 return String.valueOf(object.getId());
             }
         }, "ID");
+        setColumnWidth(0, "80px");
         
         addColumn(new TextColumn<LimitOrderResponse>() {
 
@@ -36,6 +41,7 @@ public class PendingTab extends CellTable<LimitOrderResponse> {
                 return object.getInstrument().name();
             }
         }, "Instrument");
+        setColumnWidth(1, "80px");
         
         addColumn(new TextColumn<LimitOrderResponse>() {
 
@@ -44,6 +50,7 @@ public class PendingTab extends CellTable<LimitOrderResponse> {
                 return String.valueOf(object.getRequiredAmount());
             }
         }, "Required");
+        setColumnWidth(2, "80px");
         
         addColumn(new ButtonColumn() {
             
@@ -52,6 +59,7 @@ public class PendingTab extends CellTable<LimitOrderResponse> {
                 return "x";
             }
         }, "Action");
+        setColumnWidth(3, "80px");
         
         
         setRowStyles(new RowStyles<LimitOrderResponse>() {
@@ -66,26 +74,28 @@ public class PendingTab extends CellTable<LimitOrderResponse> {
             }
         });
         
-        provider = new ListDataProvider<>();
-        provider.addDataDisplay(this);
+       
+        
+        setWidth("425px");
+        setHeight("322px");
     }
     
     public void onPending(LimitOrderResponse limit) {
-        Optional<LimitOrderResponse> inList = provider.getList().stream().filter( l -> l.getId() == limit.getId()).findFirst();
+        Optional<LimitOrderResponse> inList = provider.stream().filter( l -> l.getId() == limit.getId()).findFirst();
         
         if(inList.isPresent()) {
-            provider.getList().remove(inList.get());
+            provider.remove(inList.get());
         }
         
         if(limit.getRequiredAmount() > 0.0) {
-            provider.getList().add(limit);
+            provider.add(limit);
         }
         
-        provider.flush();
+        setRowData(provider);
     }
     
     public void onStatus(OrderStatusResponse resp) {
-        provider.getList().clear();
+        provider.clear();
         resp.getOrders().forEach( l -> onPending(l) );
     }
     

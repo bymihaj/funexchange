@@ -22,6 +22,7 @@ import bymihaj.data.order.OrderStatusRequest;
 import bymihaj.data.order.OrderStatusResponse;
 import bymihaj.data.order.RejectOrderResponse;
 import bymihaj.data.order.RejectOrderType;
+import bymihaj.data.order.Trade;
 
 public class TradeTest {
 
@@ -468,8 +469,8 @@ public class TradeTest {
         Assert.assertTrue(orderbook.getSellLevels().isEmpty());
 
         List<LimitOrderResponse> orders = client.filter(LimitOrderResponse.class);
-        Assert.assertEquals(price, orders.get(orders.size() - 2).getFilledPrice(), 0);
-        Assert.assertEquals(price, orders.get(orders.size() - 1).getFilledPrice(), 0);
+        Assert.assertEquals(price, orders.get(orders.size() - 2).getAveragePrice(), 0);
+        Assert.assertEquals(price, orders.get(orders.size() - 1).getAveragePrice(), 0);
 
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(),
@@ -613,7 +614,19 @@ public class TradeTest {
 
     @Test
     public void twoMarketOrderResponseOnMultiLevelExectutionTest() {
-        Assert.fail("TODO"); // one market order with trades...
+        double l1 = 2.0;
+        double l2 = 3.0;
+        double amount = 10.0;
+        client.limitSell(amount, l1);
+        client.limitSell(amount, l2);
+        client.marketBuy(amount*2);
+        
+        MarketOrderResponse order = client.last(MarketOrderResponse.class);
+        List<Trade> trades = order.getTrades();
+        Assert.assertEquals(l1, trades.get(0).getPrice(), 0);
+        Assert.assertEquals(amount, trades.get(0).getAmount(), 0);
+        Assert.assertEquals(l2, trades.get(1).getPrice(), 0);
+        Assert.assertEquals(amount, trades.get(1).getAmount(), 0);
     }
 
     @Test

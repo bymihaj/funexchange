@@ -37,6 +37,9 @@ public class AssetsPane extends CellTable<Property> {
         provider.addDataDisplay(this);
         
         conn.send(new AssetsRequest());
+        
+        setWidth("180px");
+        setHeight("120px");
     }
     
     public void onAssetsResponse(AssetsResponse assets) {

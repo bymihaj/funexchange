@@ -40,6 +40,7 @@ import bymihaj.data.order.OrderStatusRequest;
 import bymihaj.data.order.OrderStatusResponse;
 import bymihaj.data.order.RejectOrderResponse;
 import bymihaj.data.order.RejectOrderType;
+import bymihaj.data.order.Trade;
 
 public class GwtParser implements IJsonParser{
 
@@ -174,24 +175,22 @@ public class GwtParser implements IJsonParser{
     protected LimitOrderResponse limitOrderFromJson(JSONObject jo) {
         LimitOrderResponse order = new LimitOrderResponse();
         order.setPrice(jo.get("price").isNumber().doubleValue());
-        order.setFilledAmount(jo.get("filledAmount").isNumber().doubleValue());
-        order.setFilledPrice(jo.get("filledPrice").isNumber().doubleValue());
         order.setAmount(jo.get("amount").isNumber().doubleValue());
         order.setInstrument(Instrument.valueOf(jo.get("instrument").isString().stringValue()));
         order.setId((long)jo.get("id").isNumber().doubleValue());
         order.setSide(OrderSide.valueOf(jo.get("side").isString().stringValue()));
+        parseTrades(order, jo);
         return order;
     }
     
     protected MarketOrderResponse marketOrderFromJson(String json) {
         MarketOrderResponse order = new MarketOrderResponse();
         JSONObject jo = JSONParser.parseStrict(json).isObject();
-        order.setFilledAmount(jo.get("filledAmount").isNumber().doubleValue());
-        order.setFilledPrice(jo.get("filledPrice").isNumber().doubleValue());
         order.setAmount(jo.get("amount").isNumber().doubleValue());
         order.setInstrument(Instrument.valueOf(jo.get("instrument").isString().stringValue()));
         order.setId((long)jo.get("id").isNumber().doubleValue());
         order.setSide(OrderSide.valueOf(jo.get("side").isString().stringValue()));
+        parseTrades(order, jo);
         return order;
     }
     
@@ -207,6 +206,19 @@ public class GwtParser implements IJsonParser{
             book.getSellLevels().put(Double.valueOf(key), sell.get(key).isNumber().doubleValue());
         }
         return book;
+    }
+    
+    protected void parseTrades(MarketOrderResponse order, JSONObject jo) {
+        System.out.println(jo);
+        JSONArray trades = jo.get("trades").isArray();
+        for(int i = 0; i < trades.size(); i++) {
+            JSONObject to = trades.get(i).isObject();
+            long tid = (long) to.get("tid").isNumber().doubleValue();
+            double amount = to.get("amount").isNumber().doubleValue();
+            double price = to.get("price").isNumber().doubleValue();
+            Trade trade = new Trade(tid, amount, price);
+            order.addTrade(trade);
+        }
     }
 
 }

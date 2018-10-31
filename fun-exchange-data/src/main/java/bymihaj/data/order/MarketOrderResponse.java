@@ -1,30 +1,39 @@
 package bymihaj.data.order;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MarketOrderResponse extends MarketOrderRequest {
     
-    private double filledAmount;
-    private double filledPrice;
+    private List<Trade> trades;
+    
+    public MarketOrderResponse() {
+        trades = new ArrayList<>();
+    }
 
     public double getFilledAmount() {
-        return filledAmount;
+        return trades.stream().mapToDouble( t -> t.getAmount()).sum();
     }
 
-    public void setFilledAmount(double filledAmount) {
-        this.filledAmount = filledAmount;
+    public double getRequiredAmount() {
+        return BigDecimal.valueOf(getAmount()).subtract(BigDecimal.valueOf(getFilledAmount())).doubleValue();
     }
     
-    public double getRequiredAmount() {
-    	return BigDecimal.valueOf(getAmount()).subtract(BigDecimal.valueOf(getFilledAmount())).doubleValue();
+    public double getAveragePrice() {
+        if(trades.isEmpty()) {
+            return 0.0;
+        } else {
+            return trades.stream().mapToDouble( t -> t.getPrice()).sum() / trades.size();
+        }
     }
 
-    public double getFilledPrice() {
-        return filledPrice;
+    public void addTrade(Trade trade) {
+        trades.add(trade);
     }
-
-    public void setFilledPrice(double filledPrice) {
-        this.filledPrice = filledPrice;
+    
+    public List<Trade> getTrades() {
+        return trades;
     }
 
 }

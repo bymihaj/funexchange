@@ -21,9 +21,15 @@ public class LoginPane extends VerticalPanel {
         this.conn = conn;
         
         userTbx = new TextBox();
+        userTbx.setWidth("192px");
         passTbx = new TextBox();
+        passTbx.setWidth("192px");
+        
+        setSpacing(5);
+        
         
         Button enterBtn = new Button();
+        enterBtn.setWidth("200px");
         enterBtn.setText("Enter");
         enterBtn.addClickHandler(e -> {
             LoginRequest login = new LoginRequest();
@@ -34,6 +40,7 @@ public class LoginPane extends VerticalPanel {
         });
         
         Button requestAccountBtn = new Button();
+        requestAccountBtn.setWidth("200px");
         requestAccountBtn.setText("Request account");
         requestAccountBtn.addClickHandler(e -> {
             conn.send(new AccountRequest());

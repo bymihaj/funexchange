@@ -179,17 +179,23 @@ public class GwtTestGwtParser extends GWTTestCase {
         
         JSONObject jo = new JSONObject();
         jo.put("price", new JSONNumber(price));
-        jo.put("filledAmount", new JSONNumber(filledAmount));
-        jo.put("filledPrice", new JSONNumber(filledPrice));
         jo.put("amount", new JSONNumber(amount));
         jo.put("instrument", new JSONString(instrument.name()));
         jo.put("id", new JSONNumber(id));
         jo.put("side", new JSONString(side.name()));
         
+        JSONArray trades = new JSONArray();
+        JSONObject to = new JSONObject();
+        to.put("tid", new JSONNumber(1));
+        to.put("amount", new JSONNumber(filledAmount));
+        to.put("price", new JSONNumber(filledPrice));
+        trades.set(0, to);
+        jo.put("trades", trades);
+        
         LimitOrderResponse order = parser.fromJson(jo.toString(), LimitOrderResponse.class);
         assertEquals(price, order.getPrice());
         assertEquals(filledAmount, order.getFilledAmount());
-        assertEquals(filledPrice, order.getFilledPrice());
+        assertEquals(filledPrice, order.getAveragePrice());
         assertEquals(amount, order.getAmount());
         assertEquals(instrument, order.getInstrument());
         assertEquals(id, order.getId());
@@ -222,16 +228,22 @@ public class GwtTestGwtParser extends GWTTestCase {
         OrderSide side = OrderSide.BUY;
         
         JSONObject jo = new JSONObject();
-        jo.put("filledAmount", new JSONNumber(filledAmount));
-        jo.put("filledPrice", new JSONNumber(filledPrice));
         jo.put("amount", new JSONNumber(amount));
         jo.put("instrument", new JSONString(instrument.name()));
         jo.put("id", new JSONNumber(id));
         jo.put("side", new JSONString(side.name()));
         
+        JSONArray trades = new JSONArray();
+        JSONObject to = new JSONObject();
+        to.put("tid", new JSONNumber(1));
+        to.put("amount", new JSONNumber(filledAmount));
+        to.put("price", new JSONNumber(filledPrice));
+        trades.set(0, to);
+        jo.put("trades", trades);
+        
         MarketOrderResponse order = parser.fromJson(jo.toString(), MarketOrderResponse.class);
         assertEquals(filledAmount, order.getFilledAmount());
-        assertEquals(filledPrice, order.getFilledPrice());
+        assertEquals(filledPrice, order.getAveragePrice());
         assertEquals(amount, order.getAmount());
         assertEquals(instrument, order.getInstrument());
         assertEquals(id, order.getId());
@@ -255,12 +267,18 @@ public class GwtTestGwtParser extends GWTTestCase {
         
         JSONObject jo = new JSONObject();
         jo.put("price", new JSONNumber(price));
-        jo.put("filledAmount", new JSONNumber(filledAmount));
-        jo.put("filledPrice", new JSONNumber(filledPrice));
         jo.put("amount", new JSONNumber(amount));
         jo.put("instrument", new JSONString(instrument.name()));
         jo.put("id", new JSONNumber(id));
         jo.put("side", new JSONString(side.name()));
+        
+        JSONArray trades = new JSONArray();
+        JSONObject to = new JSONObject();
+        to.put("tid", new JSONNumber(1));
+        to.put("amount", new JSONNumber(filledAmount));
+        to.put("price", new JSONNumber(filledPrice));
+        trades.set(0, to);
+        jo.put("trades", trades);
         
         JSONArray array = new JSONArray();
         array.set(0, jo);

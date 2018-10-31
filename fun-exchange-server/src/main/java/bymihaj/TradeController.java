@@ -31,6 +31,7 @@ import bymihaj.data.order.OrderStatusRequest;
 import bymihaj.data.order.OrderStatusResponse;
 import bymihaj.data.order.RejectOrderResponse;
 import bymihaj.data.order.RejectOrderType;
+import bymihaj.data.order.Trade;
 
 // TODO change bank, add reservation and etc
 // TODO create Map<Double, List<LimitOrderResponse>> as class
@@ -43,6 +44,7 @@ public class TradeController {
     public final static int LEVEL_SIZE = 20;
 
     protected AtomicLong counter = new AtomicLong(1);
+    protected AtomicLong tidCounter = new AtomicLong(1);
     protected Map<LimitOrderResponse, User> orderOfUser;
     protected ConcurrentSkipListMap<Double, List<LimitOrderResponse>> sellPool;
     protected ConcurrentSkipListMap<Double, List<LimitOrderResponse>> buyPool;
@@ -113,7 +115,6 @@ public class TradeController {
         resp.setSide(loReq.getSide());
         resp.setPrice(loReq.getPrice());
         resp.setAmount(loReq.getAmount());
-        resp.setFilledAmount(0);
         resp.setId(counter.getAndIncrement());
 
         orderOfUser.put(resp, user);
@@ -219,10 +220,10 @@ public class TradeController {
                     initUser.descrease(liq.getInstrument().getSecondary(), liqInc.doubleValue());
                 }
 
-                order.setFilledAmount(BigDecimal.valueOf(order.getFilledAmount()).add(filled).doubleValue());
-                order.setFilledPrice(priceLevel);
-                liq.setFilledAmount(BigDecimal.valueOf(liq.getFilledAmount()).add(filled).doubleValue());
-                liq.setFilledPrice(priceLevel);
+                Trade clienttrade = new Trade(tidCounter.getAndIncrement(), filled.doubleValue(), priceLevel);
+                order.addTrade(clienttrade);
+                Trade liqudityTrade = new Trade(tidCounter.getAndIncrement(), filled.doubleValue(), priceLevel);
+                liq.addTrade(liqudityTrade);
                 log.info("Match amount {} for #{} {} and #{} {}", filled.toPlainString(), order.getId(),
                         order.getSide(), liq.getId(), liq.getSide());
 

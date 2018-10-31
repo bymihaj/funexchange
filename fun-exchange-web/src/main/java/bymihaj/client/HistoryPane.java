@@ -6,14 +6,12 @@ import java.util.List;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.view.client.ListDataProvider;
 
 import bymihaj.TradeHistory;
 import bymihaj.data.order.OrderSide;
 
-public class HistoryPane extends DataGrid<TradeHistory>/*CellTable<TradeHistory> */{
+public class HistoryPane extends DataGrid<TradeHistory>{
     
-    protected ListDataProvider<TradeHistory> provider;
     protected List<TradeHistory> list;
     
     public HistoryPane() {

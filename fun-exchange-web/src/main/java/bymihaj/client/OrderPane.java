@@ -64,6 +64,9 @@ public class OrderPane extends FlexTable {
         setWidget(2, 1, priceTbx);
         setWidget(3, 0, limitRbt);
         setWidget(3, 1, marketRbt);
+        
+        setWidth("250px");
+        setHeight("120px");
     }
     
     public boolean validateInput() {
