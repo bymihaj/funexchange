@@ -209,7 +209,6 @@ public class GwtParser implements IJsonParser{
     }
     
     protected void parseTrades(MarketOrderResponse order, JSONObject jo) {
-        System.out.println(jo);
         JSONArray trades = jo.get("trades").isArray();
         for(int i = 0; i < trades.size(); i++) {
             JSONObject to = trades.get(i).isObject();
