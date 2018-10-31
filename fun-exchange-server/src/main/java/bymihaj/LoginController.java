@@ -66,8 +66,7 @@ public class LoginController {
     }
     
     public void onAssetsRequest(User user, AssetsRequest assetsRequest) {
-        AssetsResponse response = new AssetsResponse(user.getBank().getProperties());
-        user.send(response);
+        user.sendAssests();
     }
     
     public AccountResponse generateAccount() {
