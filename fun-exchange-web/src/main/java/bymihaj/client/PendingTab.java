@@ -15,6 +15,7 @@ import com.google.gwt.view.client.ListDataProvider;
 import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.LimitOrderResponse;
 import bymihaj.data.order.OrderSide;
+import bymihaj.data.order.OrderStatusRequest;
 import bymihaj.data.order.OrderStatusResponse;
 
 public class PendingTab extends DataGrid<LimitOrderResponse> {
@@ -32,7 +33,7 @@ public class PendingTab extends DataGrid<LimitOrderResponse> {
                 return String.valueOf(object.getId());
             }
         }, "ID");
-        setColumnWidth(0, "80px");
+        setColumnWidth(0, "40px");
         
         addColumn(new TextColumn<LimitOrderResponse>() {
 
@@ -50,7 +51,16 @@ public class PendingTab extends DataGrid<LimitOrderResponse> {
                 return String.valueOf(object.getRequiredAmount());
             }
         }, "Required");
-        setColumnWidth(2, "80px");
+        setColumnWidth(2, "60px");
+        
+        addColumn(new TextColumn<LimitOrderResponse>() {
+
+            @Override
+            public String getValue(LimitOrderResponse object) {
+                return String.valueOf(object.getPrice());
+            }
+        }, "Price");
+        setColumnWidth(3, "60px");
         
         addColumn(new ButtonColumn() {
             
@@ -59,7 +69,7 @@ public class PendingTab extends DataGrid<LimitOrderResponse> {
                 return "x";
             }
         }, "Action");
-        setColumnWidth(3, "80px");
+        setColumnWidth(4, "40px");
         
         
         setRowStyles(new RowStyles<LimitOrderResponse>() {
@@ -78,6 +88,8 @@ public class PendingTab extends DataGrid<LimitOrderResponse> {
         
         setWidth("425px");
         setHeight("322px");
+        
+        conn.send(new OrderStatusRequest());
     }
     
     public void onPending(LimitOrderResponse limit) {

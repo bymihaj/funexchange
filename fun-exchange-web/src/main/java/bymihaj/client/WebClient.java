@@ -61,7 +61,9 @@ public class WebClient implements EntryPoint {
 
   public void onModuleLoad() {
       
-      conn = new Connection("ws://127.0.0.1:7575");
+      //conn = new Connection("ws://127.0.0.1:7575");
+      conn = new Connection("ws://159.89.0.62:7575");
+            
       loginPane = new LoginPane(conn);
       mainScreen = RootPanel.get("allContent");
       mainScreen.add(loginPane);
