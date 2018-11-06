@@ -13,7 +13,11 @@ public class MarketOrderResponse extends MarketOrderRequest {
     }
 
     public double getFilledAmount() {
-        return trades.stream().mapToDouble( t -> t.getAmount()).sum();
+        BigDecimal sum = BigDecimal.ZERO;
+        for(Trade trade : trades) {
+            sum = sum.add(BigDecimal.valueOf(trade.getAmount()));
+        }
+        return sum.doubleValue();
     }
 
     public double getRequiredAmount() {

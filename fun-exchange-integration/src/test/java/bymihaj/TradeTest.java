@@ -672,4 +672,18 @@ public class TradeTest {
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals("999.04", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
     }
+    
+    @Test
+    public void bug4Test() {
+        SocketEmulation second = new SocketEmulation(server);
+        IntegrationHelper.login(server, second);
+        second.limitSell(5.8, 5.3);
+        second.limitSell(4.1, 4.45);
+        second.limitSell(0.999, 5.58);
+        
+        client.marketBuy(9.939);
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals("951.10", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
+        Assert.assertEquals("1009.9", assets.getProperties().get(Symbol.STK).getAmount().toPlainString());
+    }
 }
