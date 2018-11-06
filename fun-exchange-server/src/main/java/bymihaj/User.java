@@ -157,4 +157,12 @@ public class User {
         }
         send(new AssetsResponse(freeMap));
     }
+    
+    public void sendRawString(String raw) {
+        for (WebSocket webSocket : webSockets) {
+            if (webSocket.isOpen()) {
+                webSocket.send(raw);
+            }
+        }
+    }
 }

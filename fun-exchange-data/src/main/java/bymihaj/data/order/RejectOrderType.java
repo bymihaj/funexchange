@@ -4,5 +4,6 @@ public enum RejectOrderType {
     
     NO_LIQUIDITY,
     NO_ASSET,
-    NO_ID;
+    NO_ID,
+    INVALID_CONDITION;
 }

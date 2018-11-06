@@ -438,7 +438,7 @@ public class TradeTest {
         IntegrationHelper.login(server, secondClient);
 
         double amountSell = 10.0;
-        double amountBuy = 0.66;
+        double amountBuy = 0.6;
         double price = 0.33;
         double base = Bank.DEF_AMOUNT.doubleValue();
 
@@ -642,4 +642,17 @@ public class TradeTest {
         OrderBook orderbook = client.last(OrderBook.class);
         Assert.assertEquals(10.0, orderbook.getBuyLevels().get(price), 0);
     }
+    
+    @Test
+    public void bug1BuyTest() {
+        SocketEmulation second = new SocketEmulation(server);
+        IntegrationHelper.login(server, second);
+        second.limitSell(999.9, 999.9);
+        
+        client.marketBuy(1.5);
+        
+        MarketOrderResponse order = client.last(MarketOrderResponse.class);
+        Assert.assertEquals(1.0, order.getFilledAmount(), 0);
+    }
+    
 }

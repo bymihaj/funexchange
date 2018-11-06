@@ -3,6 +3,7 @@ package bymihaj;
 import java.io.ObjectInputStream.GetField;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +33,7 @@ import bymihaj.data.order.OrderStatusResponse;
 import bymihaj.data.order.RejectOrderResponse;
 import bymihaj.data.order.RejectOrderType;
 import bymihaj.data.order.Trade;
+import bymihaj.jvm.GsonParser;
 
 // TODO change bank, add reservation and etc
 // TODO create Map<Double, List<LimitOrderResponse>> as class
@@ -49,21 +51,46 @@ public class TradeController {
     protected ConcurrentSkipListMap<Double, List<LimitOrderResponse>> sellPool;
     protected ConcurrentSkipListMap<Double, List<LimitOrderResponse>> buyPool;
     protected LoginController loginController;
+    protected MessageResolver resolver;
 
     public TradeController(LoginController loginController) {
         this.loginController = loginController;
         orderOfUser = new ConcurrentHashMap<>();
         sellPool = new ConcurrentSkipListMap<>();
         buyPool = new ConcurrentSkipListMap<>();
+        resolver = new MessageResolver(new GsonParser());
     }
 
     public void onMarketOrder(User user, MarketOrderRequest moReq) {
 
+        RejectOrderResponse reject = null;
+        
+        reject = checkAndRoundAmount(moReq);
+        if(reject != null) {
+            user.send(reject);
+            return;
+        }
+        
+        reject = checkInstrument(moReq);
+        if(reject != null) {
+            user.send(reject);
+            return;
+        }
+        
+        reject = checkSide(moReq);
+        if(reject != null) {
+            user.send(reject);
+            return;
+        }
+        
+        
         // TODO remove as no sense for market order
         if (!hasAsset(user, moReq)) {
             return;
         }
 
+        
+        
         SortedMap<Double, List<LimitOrderResponse>> pool;
         if (moReq.getSide().equals(OrderSide.BUY)) {
             pool = sellPool;
@@ -78,7 +105,7 @@ public class TradeController {
         order.setId(counter.getAndIncrement());
         if (pool.isEmpty()) {
             String rejectText = "No liqudity for " + moReq.getSide() + " " + moReq.getAmount() + "on market";
-            RejectOrderResponse reject = new RejectOrderResponse(rejectText);
+            reject = new RejectOrderResponse(rejectText);
             reject.setRejectType(RejectOrderType.NO_LIQUIDITY);
             user.send(reject);
         } else {
@@ -90,8 +117,32 @@ public class TradeController {
     }
 
     public void onLimitOrder(User user, LimitOrderRequest loReq) {
-        // TODO
-
+        RejectOrderResponse reject = null;
+        
+        reject = checkAndRoundAmount(loReq);
+        if(reject != null) {
+            user.send(reject);
+            return;
+        }
+        
+        reject = checkAndRoundPrice(loReq);
+        if(reject != null) {
+            user.send(reject);
+            return;
+        }
+        
+        reject = checkInstrument(loReq);
+        if(reject != null) {
+            user.send(reject);
+            return;
+        }
+        
+        reject = checkSide(loReq);
+        if(reject != null) {
+            user.send(reject);
+            return;
+        }
+        
         // validation
         if (!hasAsset(user, loReq)) {
             return;
@@ -146,7 +197,7 @@ public class TradeController {
             }
 
             if (resp.getRequiredAmount() > maxPossible) {
-                RejectOrderResponse reject = new RejectOrderResponse("No assets");
+                reject = new RejectOrderResponse("No assets");
                 reject.setRejectType(RejectOrderType.NO_ASSET);
                 user.send(reject);
             } else {
@@ -210,6 +261,7 @@ public class TradeController {
                 } else {
                     BigDecimal readyToBuy = initUser.getFreeAsset(order.getInstrument().getSecondary())
                             .divide(BigDecimal.valueOf(priceLevel), MathContext.DECIMAL64);
+                    readyToBuy = readyToBuy.setScale(order.getInstrument().getSecondary().getCoin().scale(), RoundingMode.FLOOR);
                     filled = filled.min(readyToBuy);
 
                     BigDecimal liqInc = BigDecimal.valueOf(filled.doubleValue())
@@ -235,9 +287,7 @@ public class TradeController {
                 history.setAmount(filled.doubleValue());
                 history.setPrice(priceLevel.doubleValue());
                 history.setSide(order.getSide());
-                for (User u : loginController.getAllLoginedUser()) {
-                    u.send(history);
-                }
+                broadcastMessage(history);
 
                 if (liq.getRequiredAmount() == 0.0) {
                     toRemove.add(liq);
@@ -361,13 +411,64 @@ public class TradeController {
 
     public void broadcastOrderBook() {
         OrderBook book = packOrderBook();
-        for (User user : loginController.getAllLoginedUser()) {
-            user.send(book);
-        }
+        broadcastMessage(book);
     }
 
     public void onOrderBookRequest(User user, OrderBookRequest request) {
         OrderBook book = packOrderBook();
         user.send(book);
+    }
+    
+    public void broadcastMessage(Object message) {
+        String json = resolver.pack(message);
+        String jsonLog = json.replace("\\", "");
+        log.info("Broad for {} users message {}", loginController.getAllLoginedUser().size(), jsonLog);
+        for(User user : loginController.getAllLoginedUser()) {
+            user.sendRawString(json);
+        }
+    }
+    
+    protected RejectOrderResponse checkAndRoundAmount(MarketOrderRequest order) {
+        double amount = BigDecimal.valueOf(order.getAmount()).setScale(Symbol.STK.getCoin().scale(), RoundingMode.FLOOR).doubleValue();
+        if (amount < Symbol.STK.getCoin().doubleValue()) {
+            RejectOrderResponse reject = new RejectOrderResponse("Incorrect amount");
+            reject.setRejectType(RejectOrderType.INVALID_CONDITION);
+            return reject;
+        } else {
+            order.setAmount(amount);
+            return null;
+        }
+    }
+    
+    protected RejectOrderResponse checkAndRoundPrice(LimitOrderRequest order) {
+        double price = BigDecimal.valueOf(order.getPrice()).setScale(Symbol.MON.getCoin().scale(), RoundingMode.FLOOR).doubleValue();
+        if(price < Symbol.MON.getCoin().doubleValue()) {
+            RejectOrderResponse reject = new RejectOrderResponse("Incorrect price");
+            reject.setRejectType(RejectOrderType.INVALID_CONDITION);
+            return reject;
+        } else {
+            order.setPrice(price);
+            return null;
+        }
+    }
+    
+    protected RejectOrderResponse checkInstrument(MarketOrderRequest order) {
+        if(order.getInstrument() == null) {
+            RejectOrderResponse reject = new RejectOrderResponse("Wrong instrument");
+            reject.setRejectType(RejectOrderType.INVALID_CONDITION);
+            return reject;
+        } else {
+            return null;
+        }
+    }
+    
+    protected RejectOrderResponse checkSide(MarketOrderRequest order) {
+        if(order.getSide() == null) {
+            RejectOrderResponse reject = new RejectOrderResponse("Wrong order side");
+            reject.setRejectType(RejectOrderType.INVALID_CONDITION);
+            return reject;
+        } else {
+            return null;
+        }
     }
 }

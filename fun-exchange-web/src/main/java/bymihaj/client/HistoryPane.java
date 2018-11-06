@@ -61,7 +61,10 @@ public class HistoryPane extends DataGrid<TradeHistory>{
     }
     
     public void onTradeHistor(TradeHistory trade) {
-        list.add(trade);
+        if(list.size() > 100) {
+            list = list.subList(0, 100);
+        }
+        list.add(0, trade);
         setRowData(list);
     }
 
