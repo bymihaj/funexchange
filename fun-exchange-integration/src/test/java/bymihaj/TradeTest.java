@@ -1,10 +1,10 @@
 package bymihaj;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -450,11 +450,12 @@ public class TradeTest {
         AssetsResponse buyerResponse = secondClient.last(AssetsResponse.class);
         Map<Symbol, Property> buyer = buyerResponse.getProperties();
 
+        double monAmount = new BigDecimal(amountBuy * price).setScale(Symbol.MON.getCoin().scale(), RoundingMode.HALF_DOWN).doubleValue();
         Assert.assertEquals(base - amountSell, seller.get(Symbol.STK).getAmount().doubleValue(), 0);
-        Assert.assertEquals(base + amountBuy * price, seller.get(Symbol.MON).getAmount().doubleValue(), 0);
+        Assert.assertEquals(base + monAmount, seller.get(Symbol.MON).getAmount().doubleValue(), 0);
 
         Assert.assertEquals(base + amountBuy, buyer.get(Symbol.STK).getAmount().doubleValue(), 0);
-        Assert.assertEquals(base - amountBuy * price, buyer.get(Symbol.MON).getAmount().doubleValue(), 0);
+        Assert.assertEquals(base - monAmount, buyer.get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
     @Test
@@ -653,6 +654,15 @@ public class TradeTest {
         
         MarketOrderResponse order = client.last(MarketOrderResponse.class);
         Assert.assertEquals(1.0, order.getFilledAmount(), 0);
+    }
+    
+    @Test
+    public void bug2BuyTest() {
+        client.limitSell(0.999, 7.848);
+        client.marketBuy(0.999);
+        
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals("1000.0", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
     }
     
 }

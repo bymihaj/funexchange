@@ -253,6 +253,7 @@ public class TradeController {
 
                     BigDecimal initInc = BigDecimal.valueOf(filled.doubleValue())
                             .multiply(BigDecimal.valueOf(priceLevel.doubleValue()));
+                    initInc = initInc.setScale(Symbol.MON.getCoin().scale(), RoundingMode.HALF_DOWN);
                     initUser.increase(liq.getInstrument().getSecondary(), initInc.doubleValue());
                     liqudityPrivider.descrease(liq.getInstrument().getSecondary(), initInc.doubleValue());
                     liqudityPrivider.increase(liq.getInstrument().getPrimary(), filled.doubleValue());
@@ -266,6 +267,8 @@ public class TradeController {
 
                     BigDecimal liqInc = BigDecimal.valueOf(filled.doubleValue())
                             .multiply(BigDecimal.valueOf(priceLevel.doubleValue()));
+                    liqInc = liqInc.setScale(Symbol.STK.getCoin().scale(), RoundingMode.HALF_DOWN);
+                    
                     initUser.increase(liq.getInstrument().getPrimary(), filled.doubleValue());
                     liqudityPrivider.descrease(liq.getInstrument().getPrimary(), filled.doubleValue());
                     liqudityPrivider.increase(liq.getInstrument().getSecondary(), liqInc.doubleValue());
