@@ -1,6 +1,7 @@
 package bymihaj;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -136,6 +137,7 @@ public class User {
             for (LimitOrderResponse limit : buys) {
                 reserv = reserv.add(BigDecimal.valueOf(limit.getRequiredAmount() * limit.getPrice()));
             }
+            reserv = reserv.setScale(Symbol.MON.getCoin().scale(), RoundingMode.HALF_DOWN);
             return getBank().getProperties().get(Symbol.MON).getAmount().subtract(reserv);
         } else {
             List<LimitOrderResponse> sells = orderMap.values().stream().filter(l -> OrderSide.SELL == l.getSide())

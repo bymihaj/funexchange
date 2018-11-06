@@ -662,7 +662,14 @@ public class TradeTest {
         client.marketBuy(0.999);
         
         AssetsResponse assets = client.last(AssetsResponse.class);
-        Assert.assertEquals("1000.0", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
+        Assert.assertEquals("1000.00", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
     }
     
+    @Test
+    public void bug3BuyTest() {
+        client.limitBuy(0.999, 1.075);
+        
+        AssetsResponse assets = client.last(AssetsResponse.class);
+        Assert.assertEquals("999.04", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
+    }
 }

@@ -11,7 +11,7 @@ public class BotLauncher {
     static Logger log = LoggerFactory.getLogger(BotLauncher.class);
     
     public static void main(String...args) {
-        run(1);
+        run(10);
     }
     
     public static void run(int count) {
