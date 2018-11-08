@@ -25,6 +25,8 @@ import bymihaj.data.order.RejectOrderType;
 import bymihaj.data.order.Trade;
 
 public class TradeTest {
+    
+    final long ping = 100;
 
     protected Server server;
     protected SocketEmulation client;
@@ -36,23 +38,24 @@ public class TradeTest {
         IntegrationHelper.login(server, client);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void rejectMarketOrderTest() {
         client.marketBuy(1.0);
+        client.wait(RejectOrderResponse.class);
 
         Assert.assertFalse(client.filter(RejectOrderResponse.class).isEmpty());
         Assert.assertEquals(RejectOrderType.NO_LIQUIDITY, client.last(RejectOrderResponse.class).getRejectType());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void registerLimitOrderTest() {
         client.limitBuy(10.0, 0.1);
-
+        client.wait(LimitOrderResponse.class);
+        
         LimitOrderResponse result = client.filter(LimitOrderResponse.class).get(0);
         Assert.assertEquals(0, result.getFilledAmount(), 0);
     }
 
-    @Test
     public void orderStatusEmptyTest() {
         OrderStatusRequest req = new OrderStatusRequest();
         client.send(req);
@@ -61,23 +64,26 @@ public class TradeTest {
         Assert.assertTrue(result.getOrders().isEmpty());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void orderStatus1Test() {
         LimitOrderRequest order = client.limitBuy(1.0, 0.1);
-
+        
+        client.wait(AssetsResponse.class);
         OrderStatusRequest req = new OrderStatusRequest();
         client.send(req);
-
+        
         OrderStatusResponse result = client.filter(OrderStatusResponse.class).get(0);
         Assert.assertEquals(1, result.getOrders().size());
         Assert.assertEquals(order.getPrice(), result.getOrders().get(0).getPrice(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void orderStatus2Test() {
         client.limitBuy(1.0, 0.1);
+        client.wait(AssetsResponse.class);
         client.limitBuy(1.0, 0.1);
-
+        client.wait(AssetsResponse.class);
+        
         OrderStatusRequest req = new OrderStatusRequest();
         client.send(req);
 
@@ -86,10 +92,11 @@ public class TradeTest {
         Assert.assertNotEquals(result.getOrders().get(0), result.getOrders().get(1));
     }
 
-    @Test
+    @Test(timeout=ping)
     public void reloginStatusTest() {
         client.limitBuy(1.0, 0.1);
-
+        client.wait(AssetsResponse.class);
+        
         SocketEmulation reloginedClient = new SocketEmulation(server);
         AccountResponse clientAcc = client.filter(AccountResponse.class).get(0);
         LoginRequest reloginRequest = new LoginRequest();
@@ -104,10 +111,12 @@ public class TradeTest {
         Assert.assertEquals(1, result.getOrders().size());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void firstTradeTest() {
         LimitOrderRequest limit = client.limitSell(10.0, 5.0);
+        client.wait(AssetsResponse.class);
         MarketOrderRequest market = client.marketBuy(10.0);
+        client.wait(MarketOrderResponse.class);
 
         List<LimitOrderResponse> limitChain = client.filter(LimitOrderResponse.class);
         Assert.assertEquals(2, limitChain.size());
@@ -126,13 +135,18 @@ public class TradeTest {
         Assert.assertTrue(statusResponse.getOrders().isEmpty());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void limitPartialFillBeforePoolTest() {
         // #1
         LimitOrderRequest counterParty = client.limitSell(5.0, 1.0);
+        client.wait(AssetsResponse.class);
         // #2
         LimitOrderRequest order = client.limitBuy(10.0, 1.0);
+        client.wait(AssetsResponse.class);
+        client.wait(AssetsResponse.class);
 
+        
+        
         List<LimitOrderResponse> all = client.filter(LimitOrderResponse.class);
         List<LimitOrderResponse> counterExe = all.stream().filter(c -> c.getId() == 1).collect(Collectors.toList());
         List<LimitOrderResponse> orderExe = all.stream().filter(c -> c.getId() == 2).collect(Collectors.toList());
@@ -153,21 +167,24 @@ public class TradeTest {
         Assert.assertEquals(2, statusResponse.getOrders().get(0).getId());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void simpleChargeBankTest() {
         double amount = 10.0;
         client.limitSell(amount, 1.0);
+        client.wait(AssetsResponse.class);
 
         AssetsResponse assets = client.last(AssetsResponse.class);
         double stkBank = assets.getProperties().get(SocketEmulation.DEF_INST.getPrimary()).getAmount().doubleValue();
         Assert.assertEquals(amount, Bank.DEF_AMOUNT.doubleValue() - stkBank, 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void selfTradeBankTest() {
         double amount = 10.0;
         client.limitSell(amount, 3.0);
+        client.wait(AssetsResponse.class);
         client.marketBuy(amount);
+        client.wait(MarketOrderResponse.class);
 
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(),
@@ -176,7 +193,7 @@ public class TradeTest {
                 assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void realTradeBankTest() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -184,8 +201,10 @@ public class TradeTest {
         double startBank = Bank.DEF_AMOUNT.doubleValue();
         double amount = 10.0;
         client.limitSell(amount, 1.0);
+        client.wait(AssetsResponse.class);
         second.marketBuy(amount);
-
+        second.wait(AssetsResponse.class);
+        
         AssetsResponse clientAssets = client.last(AssetsResponse.class);
         Assert.assertEquals(startBank - amount, clientAssets.getProperties().get(Symbol.STK).getAmount().doubleValue(),
                 0);
@@ -199,27 +218,30 @@ public class TradeTest {
                 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void rejectLimitOrderByBankTest() {
         client.limitSell(Bank.DEF_AMOUNT.doubleValue() * 10, 1.0);
+        client.wait(RejectOrderResponse.class);
         Assert.assertTrue(client.filter(LimitOrderResponse.class).isEmpty());
         Assert.assertEquals(RejectOrderType.NO_ASSET, client.last(RejectOrderResponse.class).getRejectType());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void rejectMarketOrderByBankTest() {
         client.marketSell(Bank.DEF_AMOUNT.doubleValue() * 10);
+        client.wait(RejectOrderResponse.class);
         Assert.assertTrue(client.filter(LimitOrderResponse.class).isEmpty());
         Assert.assertEquals(RejectOrderType.NO_ASSET, client.last(RejectOrderResponse.class).getRejectType());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void rejectNoLiqiudity2Test() {
         double amount = 10.0;
         client.limitSell(amount, 1.0);
         client.marketBuy(amount);
         client.marketBuy(amount);
-
+        client.wait(RejectOrderResponse.class);
+        
         RejectOrderResponse reject = client.last(RejectOrderResponse.class);
         Assert.assertNotNull(reject);
         Assert.assertEquals(RejectOrderType.NO_LIQUIDITY, reject.getRejectType());
@@ -243,13 +265,14 @@ public class TradeTest {
         Assert.assertTrue(status.getOrders().isEmpty());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void checkAssetsOnPartialFillTest() {
         double limit = 33;
         double market = 100;
         client.limitSell(limit, 1.0);
         client.marketBuy(market);
-
+        client.wait(MarketOrderResponse.class);
+        
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals(Bank.DEF_AMOUNT.doubleValue(),
                 assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
@@ -257,20 +280,21 @@ public class TradeTest {
                 assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void historyTest() {
         double amount = 10;
         double price = 3.3;
         client.limitSell(amount, price);
         client.marketBuy(amount);
-
+        client.wait(TradeHistory.class);
+        
         TradeHistory trade = client.last(TradeHistory.class);
         Assert.assertEquals(amount, trade.getAmount(), 0);
         Assert.assertEquals(price, trade.getPrice(), 0);
         Assert.assertEquals(OrderSide.BUY, trade.getSide());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void historyForAllTest() {
         SocketEmulation secondClient = new SocketEmulation(server);
         IntegrationHelper.login(server, secondClient);
@@ -279,14 +303,15 @@ public class TradeTest {
         double price = 3.3;
         client.limitSell(amount, price);
         client.marketBuy(amount);
-
+        secondClient.wait(TradeHistory.class);
+        
         TradeHistory trade = secondClient.last(TradeHistory.class);
         Assert.assertEquals(amount, trade.getAmount(), 0);
         Assert.assertEquals(price, trade.getPrice(), 0);
         Assert.assertEquals(OrderSide.BUY, trade.getSide());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void checkPriсeOfTwoTraderTest() {
         SocketEmulation secondClient = new SocketEmulation(server);
         IntegrationHelper.login(server, secondClient);
@@ -297,6 +322,9 @@ public class TradeTest {
 
         client.limitSell(amount, price);
         secondClient.marketBuy(amount);
+        
+        client.wait(TradeHistory.class);
+        secondClient.wait(AssetsResponse.class);
 
         AssetsResponse sellerResponse = client.last(AssetsResponse.class);
         Map<Symbol, Property> seller = sellerResponse.getProperties();
@@ -310,7 +338,7 @@ public class TradeTest {
         Assert.assertEquals(base - amount * price, buyer.get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void checkPriсeOfTwoTraderReverTest() {
         SocketEmulation secondClient = new SocketEmulation(server);
         IntegrationHelper.login(server, secondClient);
@@ -322,6 +350,9 @@ public class TradeTest {
         client.limitBuy(amount, price);
         secondClient.marketSell(amount);
 
+        client.wait(TradeHistory.class);
+        secondClient.wait(AssetsResponse.class);
+        
         AssetsResponse sellerResponse = client.last(AssetsResponse.class);
         Map<Symbol, Property> seller = sellerResponse.getProperties();
         AssetsResponse buyerResponse = secondClient.last(AssetsResponse.class);
@@ -334,15 +365,18 @@ public class TradeTest {
         Assert.assertEquals(base + amount * price, buyer.get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void cancelOrderInStatusTest() {
         client.limitSell(10, 10);
+        client.wait(AssetsResponse.class);
         LimitOrderResponse order = client.last(LimitOrderResponse.class);
-
+        
         CancelOrderRequest msg = new CancelOrderRequest();
         msg.setId(order.getId());
         client.send(msg);
-
+        client.wait(CancelOrderResponse.class);
+        client.wait(OrderBook.class);
+        
         CancelOrderResponse response = client.last(CancelOrderResponse.class);
         Assert.assertNotNull(response);
         Assert.assertEquals(order.getId(), response.getId());
@@ -351,9 +385,10 @@ public class TradeTest {
         Assert.assertTrue(status.getOrders().isEmpty());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void cancelOrderInLiquidityTest() {
         client.limitSell(10, 10);
+        client.wait(AssetsResponse.class);
         LimitOrderResponse order = client.last(LimitOrderResponse.class);
 
         CancelOrderRequest msg = new CancelOrderRequest();
@@ -361,18 +396,20 @@ public class TradeTest {
         client.send(msg);
 
         client.marketBuy(10);
-
+        client.wait(RejectOrderResponse.class);
+        
         RejectOrderResponse reject = client.last(RejectOrderResponse.class);
         Assert.assertNotNull(reject);
         Assert.assertEquals(RejectOrderType.NO_LIQUIDITY, reject.getRejectType());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void tryToCancelNoOwnedOrderTest() {
         SocketEmulation secondClient = new SocketEmulation(server);
         IntegrationHelper.login(server, secondClient);
 
         client.limitSell(10, 10);
+        client.wait(LimitOrderResponse.class);
         LimitOrderResponse order = client.last(LimitOrderResponse.class);
 
         CancelOrderRequest msg = new CancelOrderRequest();
@@ -384,7 +421,7 @@ public class TradeTest {
         Assert.assertEquals(RejectOrderType.NO_ID, reject.getRejectType());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void orderbookBothSideTest() {
         double sellAmount = 10;
         double sellPrice = 20;
@@ -393,7 +430,9 @@ public class TradeTest {
 
         client.limitSell(sellAmount, sellPrice);
         client.limitBuy(buyAmount, buyPrice);
-
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         OrderBook book = client.last(OrderBook.class);
         Assert.assertFalse(book.getSellLevels().isEmpty());
         Assert.assertTrue(book.getSellLevels().containsKey(sellPrice));
@@ -404,7 +443,7 @@ public class TradeTest {
 
     }
 
-    @Test
+    @Test(timeout=ping)
     public void orderbookLevelAgregationTest() {
         double a1 = 5;
         double a2 = 3;
@@ -412,6 +451,8 @@ public class TradeTest {
 
         client.limitSell(a1, price);
         client.limitSell(a2, price);
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
 
         OrderBook book = client.last(OrderBook.class);
         Assert.assertTrue(book.getSellLevels().containsKey(price));
@@ -419,7 +460,7 @@ public class TradeTest {
 
     }
 
-    @Test
+    @Test(timeout=ping)
     public void orderbookPartialFillTest() {
         double startAmount = 10;
         double buyAmount = 3;
@@ -427,12 +468,15 @@ public class TradeTest {
 
         client.limitSell(startAmount, price);
         client.marketBuy(buyAmount);
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         OrderBook book = client.last(OrderBook.class);
         Assert.assertTrue(book.getSellLevels().containsKey(price));
         Assert.assertEquals(startAmount - buyAmount, book.getSellLevels().get(price), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void coinTradeTest() {
         SocketEmulation secondClient = new SocketEmulation(server);
         IntegrationHelper.login(server, secondClient);
@@ -444,7 +488,10 @@ public class TradeTest {
 
         client.limitSell(amountSell, price);
         secondClient.marketBuy(amountBuy);
-
+        
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         AssetsResponse sellerResponse = client.last(AssetsResponse.class);
         Map<Symbol, Property> seller = sellerResponse.getProperties();
         AssetsResponse buyerResponse = secondClient.last(AssetsResponse.class);
@@ -458,12 +505,15 @@ public class TradeTest {
         Assert.assertEquals(base - monAmount, buyer.get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void zeroAmountInOrderbookTest() {
         double amount = 10;
         double price = 1;
         client.limitSell(amount, price);
         client.limitBuy(amount, price);
+        
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
 
         OrderBook orderbook = client.last(OrderBook.class);
         Assert.assertTrue(orderbook.getBuyLevels().isEmpty());
@@ -480,20 +530,23 @@ public class TradeTest {
                 assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void noOrderbookAfterCancelTest() {
-
         client.limitBuy(10.0, 1.0);
+        client.wait(AssetsResponse.class);
         LimitOrderResponse registered = client.last(LimitOrderResponse.class);
+        
         CancelOrderRequest cancel = new CancelOrderRequest();
         cancel.setId(registered.getId());
         client.send(cancel);
-
+        client.wait(CancelOrderResponse.class);
+        client.wait(OrderBook.class);
+        
         OrderBook orderbook = client.last(OrderBook.class);
         Assert.assertTrue(orderbook.getBuyLevels().isEmpty());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void multiLevelMarketExectionTest() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -505,6 +558,10 @@ public class TradeTest {
         client.limitSell(amount, price);
         second.marketBuy(amount * 2);
 
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         double bank = Bank.DEF_AMOUNT.doubleValue();
         AssetsResponse assets = second.last(AssetsResponse.class);
         Assert.assertEquals(bank + amount + (bank - amount * price) / extraPrice,
@@ -512,20 +569,24 @@ public class TradeTest {
         Assert.assertEquals(0, assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void multiLevelLimitExectionTest() {
         double price = 200.0;
         double amount = 10.0;
         client.limitSell(amount, price);
         client.limitSell(amount, 3.0);
         client.limitBuy(amount * 2, price);
+        
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
 
         OrderBook book = client.last(OrderBook.class);
         Assert.assertEquals(amount / 2.0, book.getBuyLevels().get(price), 0);
         Assert.assertEquals(amount / 2.0, book.getSellLevels().get(price), 0);
     }
 
-    @Test // TODO task number ONE !!!
+    @Test(timeout=ping)
     public void overAssetsMarketBuyTest() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -534,6 +595,9 @@ public class TradeTest {
         double price = 10000;
         client.limitSell(amount, price);
         second.marketBuy(amount);
+        
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
 
         double base = Bank.DEF_AMOUNT.doubleValue();
         double expectedAmount = Bank.DEF_AMOUNT.doubleValue() / price;
@@ -549,7 +613,7 @@ public class TradeTest {
                 assetsSecond.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
-    @Test // TODO task number ONE !!!
+    @Test(timeout=ping)
     public void overAssetsMarketSellTest() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -557,6 +621,7 @@ public class TradeTest {
         double amount = 10;
         double price = 10000;
         client.limitBuy(amount, price);
+        client.wait(AssetsResponse.class);
 
         RejectOrderResponse reject = client.last(RejectOrderResponse.class);
         Assert.assertNotNull(reject);
@@ -570,7 +635,7 @@ public class TradeTest {
                 assets.getProperties().get(Symbol.MON).getAmount().doubleValue(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void overAssetsLimitBuyPartialFillTest() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -581,6 +646,9 @@ public class TradeTest {
         second.limitSell(amount, price);
         client.limitBuy(amount * 2, extraPrice);
 
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         double base = Bank.DEF_AMOUNT.doubleValue();
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals(base + amount, assets.getProperties().get(Symbol.STK).getAmount().doubleValue(), 0);
@@ -591,16 +659,22 @@ public class TradeTest {
         Assert.assertEquals(RejectOrderType.NO_ASSET, reject.getRejectType());
     }
 
-    @Test
+    @Test(timeout=ping)
     public void cancelPartialFilledOrderTest() {
 
         client.limitSell(10.0, 1.0);
+        client.wait(LimitOrderResponse.class);
         LimitOrderResponse registered = client.last(LimitOrderResponse.class);
+        
         client.marketBuy(5.0);
+        client.wait(MarketOrderResponse.class);
+        
         CancelOrderRequest cancel = new CancelOrderRequest();
         cancel.setId(registered.getId());
         client.send(cancel);
-
+        client.wait(CancelOrderResponse.class);
+        client.wait(OrderBook.class);
+        
         OrderBook orderbook = client.last(OrderBook.class);
         Assert.assertTrue(orderbook.getSellLevels().isEmpty());
 
@@ -613,7 +687,7 @@ public class TradeTest {
 
     }
 
-    @Test
+    @Test(timeout=ping)
     public void twoMarketOrderResponseOnMultiLevelExectutionTest() {
         double l1 = 2.0;
         double l2 = 3.0;
@@ -621,6 +695,10 @@ public class TradeTest {
         client.limitSell(amount, l1);
         client.limitSell(amount, l2);
         client.marketBuy(amount*2);
+        
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
         
         MarketOrderResponse order = client.last(MarketOrderResponse.class);
         List<Trade> trades = order.getTrades();
@@ -630,7 +708,7 @@ public class TradeTest {
         Assert.assertEquals(amount, trades.get(1).getAmount(), 0);
     }
 
-    @Test
+    @Test(timeout=ping)
     public void splitLimitMarketOrderTest() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -640,11 +718,14 @@ public class TradeTest {
         second.limitSell(amount, price);
         client.limitBuy(amount * 2, price);
 
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         OrderBook orderbook = client.last(OrderBook.class);
         Assert.assertEquals(10.0, orderbook.getBuyLevels().get(price), 0);
     }
     
-    @Test
+    @Test(timeout=ping)
     public void bug1BuyTest() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -652,28 +733,35 @@ public class TradeTest {
         
         client.marketBuy(1.5);
         
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         MarketOrderResponse order = client.last(MarketOrderResponse.class);
         Assert.assertEquals(1.0, order.getFilledAmount(), 0);
     }
     
-    @Test
+    @Test(timeout=ping)
     public void bug2BuyTest() {
         client.limitSell(0.999, 7.848);
         client.marketBuy(0.999);
+        
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
         
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals("1000.00", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
     }
     
-    @Test
+    @Test(timeout=ping)
     public void bug3BuyTest() {
         client.limitBuy(0.999, 1.075);
+        client.wait(OrderBook.class);
         
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals("999.04", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
     }
     
-    @Test
+    @Test(timeout=ping)
     public void bug4Test() {
         SocketEmulation second = new SocketEmulation(server);
         IntegrationHelper.login(server, second);
@@ -682,6 +770,12 @@ public class TradeTest {
         second.limitSell(0.999, 5.58);
         
         client.marketBuy(9.939);
+        
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        client.wait(OrderBook.class);
+        
         AssetsResponse assets = client.last(AssetsResponse.class);
         Assert.assertEquals("951.10", assets.getProperties().get(Symbol.MON).getAmount().toPlainString());
         Assert.assertEquals("1009.9", assets.getProperties().get(Symbol.STK).getAmount().toPlainString());

@@ -1,22 +1,22 @@
 package bymihaj;
 
-import java.io.ObjectInputStream.GetField;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +35,6 @@ import bymihaj.data.order.RejectOrderType;
 import bymihaj.data.order.Trade;
 import bymihaj.jvm.GsonParser;
 
-// TODO change bank, add reservation and etc
-// TODO create Map<Double, List<LimitOrderResponse>> as class
-// TODO think about dual operation interface (sell/buy)
-// TODO check in real concurrency way with emulation of long execution
 public class TradeController {
 
     static Logger log = LoggerFactory.getLogger(TradeController.class);
@@ -52,6 +48,7 @@ public class TradeController {
     protected ConcurrentSkipListMap<Double, List<LimitOrderResponse>> buyPool;
     protected LoginController loginController;
     protected MessageResolver resolver;
+    protected ThreadPoolExecutor executor;
 
     public TradeController(LoginController loginController) {
         this.loginController = loginController;
@@ -59,6 +56,9 @@ public class TradeController {
         sellPool = new ConcurrentSkipListMap<>();
         buyPool = new ConcurrentSkipListMap<>();
         resolver = new MessageResolver(new GsonParser());
+        
+        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1000);
+        executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue);
     }
 
     public void onMarketOrder(User user, MarketOrderRequest moReq) {
@@ -84,28 +84,34 @@ public class TradeController {
         }
         
         
-        // TODO remove as no sense for market order
-        if (!hasAsset(user, moReq)) {
+        log.info("Queue size: {}", executor.getQueue().size());
+        executor.submit(() -> {
+            safeMarket(user, moReq);
+        });
+        
+    }
+    
+    protected void safeMarket(User user, MarketOrderRequest request) {
+        
+        if (!hasAsset(user, request)) {
             return;
         }
-
-        
         
         SortedMap<Double, List<LimitOrderResponse>> pool;
-        if (moReq.getSide().equals(OrderSide.BUY)) {
+        if (request.getSide().equals(OrderSide.BUY)) {
             pool = sellPool;
         } else {
             pool = buyPool;
         }
 
         MarketOrderResponse order = new MarketOrderResponse();
-        order.setInstrument(moReq.getInstrument());
-        order.setAmount(moReq.getAmount());
-        order.setSide(moReq.getSide());
+        order.setInstrument(request.getInstrument());
+        order.setAmount(request.getAmount());
+        order.setSide(request.getSide());
         order.setId(counter.getAndIncrement());
         if (pool.isEmpty()) {
-            String rejectText = "No liqudity for " + moReq.getSide() + " " + moReq.getAmount() + "on market";
-            reject = new RejectOrderResponse(rejectText);
+            String rejectText = "No liqudity for " + request.getSide() + " " + request.getAmount() + "on market";
+            RejectOrderResponse reject = new RejectOrderResponse(rejectText);
             reject.setRejectType(RejectOrderType.NO_LIQUIDITY);
             user.send(reject);
         } else {
@@ -143,23 +149,19 @@ public class TradeController {
             return;
         }
         
+        log.info("Queue size: {}", executor.getQueue().size());
+        executor.submit(() -> {
+            safeLimit(user, loReq);
+        });
+        
+    }
+    
+    protected void safeLimit(User user, LimitOrderRequest loReq) {
+        
         // validation
         if (!hasAsset(user, loReq)) {
             return;
         }
-
-        // generate id
-        // save by
-        // 1.id-order ( update or cancel order by id)
-        // 2.user-order ( get status of orders for user )
-        // ==> order collection on user side
-
-        // 3.liquidity-list<order> (matching) !important
-        // 4.order-user ( sending result to user)
-        // !important
-        // ? replace by link
-
-        // 5. try to partial fill be place to pool
 
         LimitOrderResponse resp = new LimitOrderResponse();
         resp.setInstrument(loReq.getInstrument());
@@ -197,7 +199,7 @@ public class TradeController {
             }
 
             if (resp.getRequiredAmount() > maxPossible) {
-                reject = new RejectOrderResponse("No assets");
+                RejectOrderResponse reject = new RejectOrderResponse("No assets");
                 reject.setRejectType(RejectOrderType.NO_ASSET);
                 user.send(reject);
             } else {
@@ -209,6 +211,7 @@ public class TradeController {
         user.sendAssests();
 
         broadcastOrderBook();
+        
     }
 
     public void onOrderStatusRequest(User user, OrderStatusRequest statRequest) {
@@ -349,33 +352,40 @@ public class TradeController {
             user.send(reject);
             return;
         } else {
-            LimitOrderResponse order = optionalOrder.get();
-            user.removeOrder(order.getId());
-            orderOfUser.remove(order);
-            double priceLevel = order.getPrice();
-            if (OrderSide.BUY.equals(order.getSide())) {
-                buyPool.get(priceLevel).remove(order);
-                if (buyPool.get(priceLevel).isEmpty()) {
-                    buyPool.remove(priceLevel);
-                }
-            } else {
-                sellPool.get(order.getPrice()).remove(order);
-                if (sellPool.get(priceLevel).isEmpty()) {
-                    sellPool.remove(priceLevel);
-                }
-            }
-
-            CancelOrderResponse response = new CancelOrderResponse();
-            response.setId(cancel.getId());
-            user.send(response);
-
-            OrderStatusResponse resp = new OrderStatusResponse();
-            resp.getOrders().addAll(user.getAllOrders());
-            user.send(resp);
-            user.sendAssests();
-            broadcastOrderBook();
+            log.info("Queue size: {}", executor.getQueue().size());
+            executor.submit(() -> {
+                safeCancel(user, optionalOrder.get());
+            });
         }
 
+    }
+    
+    protected void safeCancel(User user, LimitOrderResponse cancel) {
+        LimitOrderResponse order = cancel;
+        user.removeOrder(order.getId());
+        orderOfUser.remove(order);
+        double priceLevel = order.getPrice();
+        if (OrderSide.BUY.equals(order.getSide())) {
+            buyPool.get(priceLevel).remove(order);
+            if (buyPool.get(priceLevel).isEmpty()) {
+                buyPool.remove(priceLevel);
+            }
+        } else {
+            sellPool.get(order.getPrice()).remove(order);
+            if (sellPool.get(priceLevel).isEmpty()) {
+                sellPool.remove(priceLevel);
+            }
+        }
+
+        CancelOrderResponse response = new CancelOrderResponse();
+        response.setId(cancel.getId());
+        user.send(response);
+
+        OrderStatusResponse resp = new OrderStatusResponse();
+        resp.getOrders().addAll(user.getAllOrders());
+        user.send(resp);
+        user.sendAssests();
+        broadcastOrderBook();
     }
 
     protected OrderBook packOrderBook() {

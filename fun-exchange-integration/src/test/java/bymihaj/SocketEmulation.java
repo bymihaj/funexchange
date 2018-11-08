@@ -6,6 +6,7 @@ import java.nio.channels.NotYetConnectedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -25,11 +26,12 @@ public class SocketEmulation implements WebSocket {
     protected WebSocketServer server;
     protected MessageResolver resolver;
     protected List<Object> incomeMessageHistory;
+    protected Class trap;
     
     public SocketEmulation(WebSocketServer server) {
         this.server = server;
         resolver = new MessageResolver(new GsonParser());
-        incomeMessageHistory = new ArrayList<>();
+        incomeMessageHistory = new CopyOnWriteArrayList<>();
     }
     
     public void send(Object msg) {
@@ -38,8 +40,12 @@ public class SocketEmulation implements WebSocket {
     }
     
     @Override
-    public void send(String text) throws NotYetConnectedException {
-        incomeMessageHistory.add(resolver.resolve(text));
+    synchronized public void send(String text) throws NotYetConnectedException {
+        Object msg = resolver.resolve(text);
+        incomeMessageHistory.add(msg);
+        if(msg.getClass().equals(trap)) {
+            notifyAll();
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -60,6 +66,15 @@ public class SocketEmulation implements WebSocket {
     	} else {
     		return list.get(list.size() - 1);
     	}
+    }
+    
+    synchronized public void wait(Class goal) {
+        trap = goal;
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
     
     public MarketOrderRequest market(double amount, OrderSide side) {

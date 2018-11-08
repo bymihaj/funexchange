@@ -16,6 +16,8 @@ import bymihaj.data.order.RejectOrderType;
 
 public class ValidationTest {
 
+    final long ping = 100;
+    
     protected Server server;
     protected SocketEmulation client;
     protected MarketOrderRequest goodMarket;
@@ -52,9 +54,9 @@ public class ValidationTest {
     public void marketAmountRoundedTest() {
         client.limitSell(10.0, 1.0);
         
-        
         goodMarket.setAmount(Symbol.STK.getCoin().doubleValue() * 1.5);
         client.send(goodMarket);
+        client.wait(MarketOrderResponse.class);
         
         MarketOrderResponse order = client.last(MarketOrderResponse.class);
         Assert.assertEquals(Symbol.STK.getCoin().doubleValue(), order.getFilledAmount(), 0);
@@ -73,6 +75,7 @@ public class ValidationTest {
     public void limitAmountRoundedTest() {
         goodLimit.setAmount(Symbol.STK.getCoin().doubleValue() * 1.5);
         client.send(goodLimit);
+        client.wait(LimitOrderResponse.class);
         
         LimitOrderResponse order = client.last(LimitOrderResponse.class);
         Assert.assertEquals(Symbol.STK.getCoin().doubleValue(), order.getAmount(), 0);
@@ -91,6 +94,7 @@ public class ValidationTest {
     public void limitPriceRoundedTest() {
         goodLimit.setPrice(Symbol.MON.getCoin().doubleValue() * 1.5);
         client.send(goodLimit);
+        client.wait(LimitOrderResponse.class);
         
         LimitOrderResponse order = client.last(LimitOrderResponse.class);
         Assert.assertEquals(Symbol.MON.getCoin().doubleValue(), order.getPrice(), 0);
