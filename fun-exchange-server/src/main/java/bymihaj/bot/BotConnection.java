@@ -1,5 +1,6 @@
 package bymihaj.bot;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,6 +61,9 @@ public class BotConnection extends WebSocketClient {
     @Override
     public void onError(Exception ex) {
         log.info("{} get error {}", this.getClass().getName(), ex);
+        if(ConnectException.class.equals(ex)) {
+            connect();
+        }
     }
     
     public void setOpenHandler(Runnable openHandler) {

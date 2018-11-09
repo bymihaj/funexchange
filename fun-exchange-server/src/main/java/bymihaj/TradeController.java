@@ -18,6 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class TradeController {
     protected LoginController loginController;
     protected MessageResolver resolver;
     protected ThreadPoolExecutor executor;
-
+    
     public TradeController(LoginController loginController) {
         this.loginController = loginController;
         orderOfUser = new ConcurrentHashMap<>();
@@ -305,6 +306,11 @@ public class TradeController {
             }
 
             market.get(priceLevel).removeAll(toRemove);
+            /*
+            StringBuffer sb = new StringBuffer();
+            toRemove.forEach( l -> sb.append(l.getId()));
+            log.info("Level {} remove orders {}", priceLevel, sb );
+            */
             if (market.get(priceLevel).isEmpty()) {
                 market.remove(priceLevel);
             }
@@ -397,11 +403,11 @@ public class TradeController {
             Collections.reverse(buyeLevels);
             buyeLevels = buyeLevels.subList(0, Math.min(LEVEL_SIZE, buyeLevels.size()));
             for (Double level : buyeLevels) {
-                double amount = 0;
+                BigDecimal amount = BigDecimal.ZERO;
                 for (LimitOrderResponse order : buyPool.get(level)) {
-                    amount = amount + order.getRequiredAmount();
+                    amount = amount.add(BigDecimal.valueOf(order.getRequiredAmount()));
                 }
-                book.getBuyLevels().put(level, amount);
+                book.getBuyLevels().put(level, amount.doubleValue());
             }
         }
 
@@ -411,11 +417,11 @@ public class TradeController {
 
             sellLevels = sellLevels.subList(0, Math.min(LEVEL_SIZE, sellLevels.size()));
             for (Double level : sellLevels) {
-                double amount = 0;
+                BigDecimal amount = BigDecimal.ZERO;
                 for (LimitOrderResponse order : sellPool.get(level)) {
-                    amount = amount + order.getRequiredAmount();
+                    amount = amount.add(BigDecimal.valueOf(order.getRequiredAmount()));
                 }
-                book.getSellLevels().put(level, amount);
+                book.getSellLevels().put(level, amount.doubleValue());
             }
         }
 
