@@ -30,6 +30,9 @@ public class Server extends WebSocketServer {
     protected LoginController loginController;
     protected RightController rightController;
     protected TradeController tradeController;
+    protected RoundController roundController;
+    protected RoundConfig roundConfig;
+    
     
     public Server(InetSocketAddress address) {
         super(address);
@@ -50,6 +53,11 @@ public class Server extends WebSocketServer {
         subscribe(OrderBookRequest.class, tradeController::onOrderBookRequest);
         
         rightController = new RightController();
+        
+        roundConfig = new RoundConfig();
+        roundController = new RoundController(roundConfig, loginController);
+        subscribe(LobbyRequest.class, roundController::onLobby);
+        subscribe(RoundRegisterRequest.class, roundController::onRegister);
     }
     
     @Override
@@ -118,6 +126,10 @@ public class Server extends WebSocketServer {
             subscribers.put(type, new ArrayList<>());
         }
         subscribers.get(type).add(listener);
+    }
+    
+    public RoundConfig getRoundConfig() {
+        return roundConfig;
     }
     
 

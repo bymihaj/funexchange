@@ -21,6 +21,10 @@ public class RightController {
             return user.isLogined && user.getBank() != null;
         } else if(msg instanceof OrderBookRequest) {
             return user.isLogined && user.getBank() != null;
+        } else if(msg instanceof LobbyRequest) {
+            return user.isLogined;
+        } else if(msg instanceof RoundRegisterRequest) {
+            return user.isLogined;
         } else {	
             return false;
         } 

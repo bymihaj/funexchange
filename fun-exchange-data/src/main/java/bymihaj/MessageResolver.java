@@ -3,8 +3,6 @@ package bymihaj;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.Gson;
-
 import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.CancelOrderResponse;
 import bymihaj.data.order.LimitOrderRequest;
@@ -41,6 +39,9 @@ public class MessageResolver {
         register(CancelOrderResponse.class);
         register(OrderBook.class);
         register(OrderBookRequest.class);
+        register(LobbyRequest.class);
+        register(LobbyResponse.class);
+        register(RoundRegisterRequest.class);
     }
     
     protected void register(Class<?> clazz) {

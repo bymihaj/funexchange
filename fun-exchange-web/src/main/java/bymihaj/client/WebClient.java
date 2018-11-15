@@ -61,135 +61,31 @@ public class WebClient implements EntryPoint {
 
   public void onModuleLoad() {
       
-      //conn = new Connection("ws://127.0.0.1:7575");
-      conn = new Connection("ws://159.89.0.62:7575");
+      conn = new Connection("ws://127.0.0.1:7575");
+      //conn = new Connection("ws://159.89.0.62:7575");
             
       loginPane = new LoginPane(conn);
       mainScreen = RootPanel.get("allContent");
       mainScreen.add(loginPane);
       
       conn.subscribe(LoginResponse.class, this::onLoginResponse);
-      /*
-      conn.subscribe(LoginResponse.class, new MessageListener<LoginResponse>() {
-
-        @Override
-        public void onMessage(LoginResponse msg) {
-            if(LoginResponse.Status.OK.equals(msg.getStatus())) {
-                MainPane mainPane = new MainPane(conn);
-                mainScreen.remove(loginPane);
-                mainScreen.add(mainPane);
-            } else {
-                Window.alert("Login rejected, wrong user/pass");
-            }
-        }
-      });
-      */
-      
-      /*
-      MessageResolver resolver = new MessageResolver(new GwtParser());
-      
-      Button requestBtn = new Button();
-      requestBtn.setText("Request account");
-      
-      VerticalPanel requestPane = new VerticalPanel();
-      requestPane.add(new Label(" * Create account"));
-      requestPane.add(new Label("Login"));
-      requestPane.add(new Label("?????"));
-      requestPane.add(new Label("Password"));
-      requestPane.add(new Label("???"));
-      requestPane.add(requestBtn);
-      
-      Button enterBtn = new Button();
-      enterBtn.setText("Enter");
-      
-      TextBox userTbx = new TextBox();
-      TextBox passTbx = new TextBox();
-      VerticalPanel enterPane = new VerticalPanel();
-      enterPane.add(new Label(" * Entering"));
-      enterPane.add(new Label("User"));
-      enterPane.add(userTbx);
-      enterPane.add(new Label("Password"));
-      enterPane.add(passTbx);
-      enterPane.add(enterBtn);
-      
-      
-      DecoratorPanel decorator1 = new DecoratorPanel();
-      decorator1.setWidget(requestPane);
-      
-      DecoratorPanel decorator2 = new DecoratorPanel();
-      decorator2.setWidget(enterPane);
-      
-      
-      HorizontalPanel loginPane = new HorizontalPanel();
-      loginPane.add(decorator1);
-      loginPane.add(decorator2);
-      
-      
-      RootPanel mainScreen = RootPanel.get("allContent");
-      mainScreen.add(loginPane);
-      
-      // TODO for debug
-      
-      WebSocket ws = WebSocket.newWebSocketIfSupported();
-      ws.setListener(new WebSocketListener() {
-        
-        @Override
-        public void onOpen(WebSocket webSocket) {
-            // TODO Auto-generated method stub
-            
-        }
-        
-        @Override
-        public void onMessage(WebSocket webSocket, ArrayBuffer data) {
-            // TODO Auto-generated method stub
-           
-
-        }
-        
-        @Override
-        public void onMessage(WebSocket webSocket, String data) {
-            // TODO Auto-generated method stub
-            AccountResponse resp = resolver.resolve(data);
-            userTbx.setText(resp.getUser());
-            passTbx.setText(resp.getPass());
-        }
-        
-        @Override
-        public void onError(WebSocket webSocket) {
-            // TODO Auto-generated method stub
-            
-        }
-        
-        @Override
-        public void onClose(WebSocket webSocket, boolean wasClean, int code, String reason) {
-            // TODO Auto-generated method stub
-            
-        }
-    });
-              
-             
-      
-      requestBtn.addClickHandler(new ClickHandler() {
-          
-          @Override
-          public void onClick(ClickEvent event) {
-              AccountRequest msg = new AccountRequest();
-              String json = resolver.pack(msg);
-              ws.send(json);
-          }
-      });
-      
-      
-       
-       ws.connect("ws://127.0.0.1:7575");
-      */
   }
   
   public void onLoginResponse(LoginResponse loginResponse) {
       if(LoginResponse.Status.OK.equals(loginResponse.getStatus())) {
-          MainPane mainPane = new MainPane(conn);
+          
           mainScreen.remove(loginPane);
-          mainScreen.add(mainPane);
+          if(mainScreen.getWidgetCount() == 0) { 
+              /*
+              MainPane mainPane = new MainPane(conn);
+              mainScreen.add(mainPane);
+              */
+              
+              LobbyPane lobby = new LobbyPane();
+              mainScreen.add(lobby);
+              
+          }
+         
       } else {
           Window.alert("Login rejected, wrong user/pass");
       }

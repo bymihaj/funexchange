@@ -13,11 +13,14 @@ import bymihaj.AccountResponse;
 import bymihaj.AssetsRequest;
 import bymihaj.AssetsResponse;
 import bymihaj.Instrument;
+import bymihaj.LobbyRequest;
+import bymihaj.LobbyResponse;
 import bymihaj.LoginRequest;
 import bymihaj.LoginResponse;
 import bymihaj.MessageHolder;
 import bymihaj.OrderBook;
 import bymihaj.OrderBookRequest;
+import bymihaj.RoundRegisterRequest;
 import bymihaj.Symbol;
 import bymihaj.TradeHistory;
 import bymihaj.data.order.CancelOrderRequest;
@@ -333,4 +336,57 @@ public class GwtTestGwtParser extends GWTTestCase {
         assertEquals(3.3, trade.getPrice());
         assertEquals(OrderSide.BUY, trade.getSide());
     }
+    
+    public void testLobbyRequestTo() {
+        LobbyRequest req = new LobbyRequest();
+        String json = parser.toJson(req);
+        assertEquals("{}", json);
+    }
+    
+    public void testRoundRegisterTo() {
+        int roundId = 5;
+        RoundRegisterRequest req = new RoundRegisterRequest();
+        req.setRoundId(roundId);
+        req.setJoin(false);
+        
+        String json = parser.toJson(req);
+        JSONObject jo = JSONParser.parseStrict(json).isObject();
+        assertEquals(roundId, (int)jo.get("roundId").isNumber().doubleValue());
+        assertEquals(false, jo.get("join").isBoolean().booleanValue());
+    }
+    
+    public void testLobbyResponseTo() {
+        int roundId = 5;
+        long startTime = 100;
+        long duration = 700;
+        
+        JSONObject round = new JSONObject();
+        round.put("roundId", new JSONNumber(roundId));
+        round.put("startTime", new JSONNumber(startTime));
+        round.put("duration", new JSONNumber(duration));
+        
+        JSONObject jo = new JSONObject();
+        
+        JSONArray av = new JSONArray();
+        av.set(0, round);
+        jo.put("available", av);
+        
+        JSONArray pe = new JSONArray();
+        pe.set(0, round);
+        jo.put("pending", pe);
+        
+        JSONArray cur = new JSONArray();
+        cur.set(0, round);
+        jo.put("current", cur);
+        
+        LobbyResponse lobby = parser.fromJson(jo.toString(), LobbyResponse.class);
+        assertEquals(1, lobby.getAvailable().size());
+        assertEquals(1, lobby.getCurrent().size());
+        assertEquals(1, lobby.getPending().size());
+        assertEquals(roundId, lobby.getAvailable().get(0).getRoundId());
+        assertEquals(startTime, lobby.getAvailable().get(0).getStartTime());
+        assertEquals(duration, lobby.getAvailable().get(0).getDuration());
+        
+    }
+    
 }

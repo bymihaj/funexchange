@@ -3,12 +3,15 @@ package bymihaj.client;
 
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.ext.linker.LinkerOrder.Order;
 import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -21,12 +24,16 @@ import bymihaj.AssetsRequest;
 import bymihaj.AssetsResponse;
 import bymihaj.IJsonParser;
 import bymihaj.Instrument;
+import bymihaj.LobbyRequest;
+import bymihaj.LobbyResponse;
 import bymihaj.LoginRequest;
 import bymihaj.LoginResponse;
 import bymihaj.MessageHolder;
 import bymihaj.OrderBook;
 import bymihaj.OrderBookRequest;
 import bymihaj.Property;
+import bymihaj.Round;
+import bymihaj.RoundRegisterRequest;
 import bymihaj.Symbol;
 import bymihaj.TradeHistory;
 import bymihaj.data.order.CancelOrderRequest;
@@ -102,6 +109,13 @@ public class GwtParser implements IJsonParser{
             trade.setPrice(jo.get("price").isNumber().doubleValue());
             trade.setSide(OrderSide.valueOf(jo.get("side").isString().stringValue()));
             return (T) trade;
+        } else if(LobbyResponse.class.equals(classOfT)){
+            JSONObject jo = JSONParser.parseStrict(json).isObject();
+            LobbyResponse lobby = new LobbyResponse();
+            lobby.setAvailable(parseRound(jo.get("available").isArray()));
+            lobby.setPending(parseRound(jo.get("pending").isArray()));
+            lobby.setCurrent(parseRound(jo.get("current").isArray()));
+            return (T) lobby;
         }
         
         log.info("fromJson failed of class: "+classOfT.getName());
@@ -150,6 +164,14 @@ public class GwtParser implements IJsonParser{
             return jo.toString();
         } else if(src instanceof OrderBookRequest) {
             return new JSONObject().toString();
+        } else if(src instanceof LobbyRequest) {
+            return new JSONObject().toString();
+        } else if(src instanceof RoundRegisterRequest){
+            RoundRegisterRequest req = (RoundRegisterRequest) src;
+            JSONObject jo = new JSONObject();
+            jo.put("roundId", new JSONNumber(req.getRoundId()));
+            jo.put("join", JSONBoolean.getInstance(req.isJoin()));
+            return jo.toString();
         }
         
         log.info("toJson failed of class: " + src.getClass().getName());
@@ -218,6 +240,19 @@ public class GwtParser implements IJsonParser{
             Trade trade = new Trade(tid, amount, price);
             order.addTrade(trade);
         }
+    }
+    
+    protected List<Round> parseRound(JSONArray array) {
+        List<Round> result = new ArrayList<>();
+        for(int i = 0; i < array.size(); i++) {
+            Round round = new Round();
+            JSONObject jo = array.get(i).isObject();
+            round.setRoundId((long)jo.get("roundId").isNumber().doubleValue());
+            round.setStartTime((long)jo.get("startTime").isNumber().doubleValue());
+            round.setDuration((long)jo.get("duration").isNumber().doubleValue());
+            result.add(round);
+        }
+        return result;
     }
 
 }
