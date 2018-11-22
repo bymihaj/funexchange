@@ -34,8 +34,16 @@ import bymihaj.OrderBookRequest;
 import bymihaj.Property;
 import bymihaj.Round;
 import bymihaj.RoundRegisterRequest;
+import bymihaj.RoundStatus;
+import bymihaj.RoundStatusRequest;
 import bymihaj.Symbol;
+import bymihaj.Team;
 import bymihaj.TradeHistory;
+import bymihaj.data.game.PlayedRecord;
+import bymihaj.data.game.PlayedRoundRequest;
+import bymihaj.data.game.PlayedRoundResponse;
+import bymihaj.data.game.RoundTableRequest;
+import bymihaj.data.game.RoundTableResponse;
 import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.CancelOrderResponse;
 import bymihaj.data.order.LimitOrderRequest;
@@ -116,6 +124,50 @@ public class GwtParser implements IJsonParser{
             lobby.setPending(parseRound(jo.get("pending").isArray()));
             lobby.setCurrent(parseRound(jo.get("current").isArray()));
             return (T) lobby;
+        } else if(RoundStatus.class.equals(classOfT)) {
+            JSONObject jo = JSONParser.parseStrict(json).isObject();
+            RoundStatus status = new RoundStatus();
+            JSONObject rjo = jo.get("round").isObject();
+            Round round = new Round();
+            round.setRoundId((long)rjo.get("roundId").isNumber().doubleValue());
+            round.setStartTime((long)rjo.get("startTime").isNumber().doubleValue());
+            round.setDuration((long)rjo.get("duration").isNumber().doubleValue());
+            status.setRound(round);
+            status.setStarted(jo.get("isStarted").isBoolean().booleanValue());
+            status.setTeam(Team.valueOf(jo.get("team").isString().stringValue()));
+            return (T) status;
+        } else if(RoundTableResponse.class.equals(classOfT)) {
+            JSONObject jo = JSONParser.parseStrict(json).isObject();
+            RoundTableResponse resp = new RoundTableResponse();
+            resp.setRoundId((long)jo.get("roundId").isNumber().doubleValue());
+            JSONArray green = jo.get("green").isArray();
+            for(int  i = 0; i < green.size(); i++) {
+                JSONObject rjo = green.get(i).isObject();
+                PlayedRecord record = new PlayedRecord();
+                record.setUser(rjo.get("user").isString().stringValue());
+                record.setPosition((int)rjo.get("position").isNumber().doubleValue());
+                record.setAmount(rjo.get("amount").isNumber().doubleValue());
+                resp.getGreen().add(record);
+            }
+            JSONArray red = jo.get("red").isArray();
+            for(int  i = 0; i < red.size(); i++) {
+                JSONObject rjo = red.get(i).isObject();
+                PlayedRecord record = new PlayedRecord();
+                record.setUser(rjo.get("user").isString().stringValue());
+                record.setPosition((int)rjo.get("position").isNumber().doubleValue());
+                record.setAmount(rjo.get("amount").isNumber().doubleValue());
+                resp.getRed().add(record);
+            }
+            return (T) resp;
+        } else if(PlayedRoundResponse.class.equals(classOfT)) {
+            JSONObject jo = JSONParser.parseStrict(json).isObject();
+            PlayedRoundResponse resp = new PlayedRoundResponse();
+            JSONArray array = jo.get("roundList").isArray();
+            for(int i = 0; i < array.size(); i++) {
+                JSONNumber number = array.get(i).isNumber();
+                resp.getRoundList().add((long)number.doubleValue());
+            }
+            return (T) resp;
         }
         
         log.info("fromJson failed of class: "+classOfT.getName());
@@ -171,6 +223,15 @@ public class GwtParser implements IJsonParser{
             JSONObject jo = new JSONObject();
             jo.put("roundId", new JSONNumber(req.getRoundId()));
             jo.put("join", JSONBoolean.getInstance(req.isJoin()));
+            return jo.toString();
+        } else if(src instanceof RoundStatusRequest) {
+            return new JSONObject().toString();
+        } else if(src instanceof PlayedRoundRequest){
+            return new JSONObject().toString();
+        } else if(src instanceof RoundTableRequest) {
+            RoundTableRequest req = (RoundTableRequest) src;
+            JSONObject jo = new JSONObject();
+            jo.put("roundId", new JSONNumber(req.getRoundId()));
             return jo.toString();
         }
         

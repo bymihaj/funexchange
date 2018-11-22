@@ -58,8 +58,16 @@ public class TradeController {
         buyPool = new ConcurrentSkipListMap<>();
         resolver = new MessageResolver(new GsonParser());
         
+        startTrading();
+    }
+    
+    public void startTrading() {
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1000);
         executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue);
+    }
+    
+    public void stopTrading() {
+        executor.shutdown();
     }
 
     public void onMarketOrder(User user, MarketOrderRequest moReq) {
@@ -489,5 +497,12 @@ public class TradeController {
         } else {
             return null;
         }
+    }
+    
+    public void reset() {
+        orderOfUser.clear();
+        sellPool.clear();
+        buyPool.clear();
+        log.info("reseted");
     }
 }

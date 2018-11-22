@@ -3,6 +3,10 @@ package bymihaj;
 import java.util.HashMap;
 import java.util.Map;
 
+import bymihaj.data.game.PlayedRoundRequest;
+import bymihaj.data.game.PlayedRoundResponse;
+import bymihaj.data.game.RoundTableRequest;
+import bymihaj.data.game.RoundTableResponse;
 import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.CancelOrderResponse;
 import bymihaj.data.order.LimitOrderRequest;
@@ -42,6 +46,12 @@ public class MessageResolver {
         register(LobbyRequest.class);
         register(LobbyResponse.class);
         register(RoundRegisterRequest.class);
+        register(RoundStatus.class);
+        register(RoundStatusRequest.class);
+        register(PlayedRoundRequest.class);
+        register(PlayedRoundResponse.class);
+        register(RoundTableRequest.class);
+        register(RoundTableResponse.class);
     }
     
     protected void register(Class<?> clazz) {

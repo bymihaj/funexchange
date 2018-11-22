@@ -46,5 +46,9 @@ public class AssetsPane extends CellTable<Property> {
         provider.getList().clear();
         provider.getList().addAll(assets.getProperties().values());
     }
+    
+    public void reset() {
+        provider.getList().clear();
+    }
         
 }

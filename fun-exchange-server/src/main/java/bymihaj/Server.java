@@ -13,6 +13,8 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bymihaj.data.game.PlayedRoundRequest;
+import bymihaj.data.game.RoundTableRequest;
 import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.LimitOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
@@ -55,9 +57,12 @@ public class Server extends WebSocketServer {
         rightController = new RightController();
         
         roundConfig = new RoundConfig();
-        roundController = new RoundController(roundConfig, loginController);
+        roundController = new RoundController(roundConfig, loginController, tradeController);
         subscribe(LobbyRequest.class, roundController::onLobby);
         subscribe(RoundRegisterRequest.class, roundController::onRegister);
+        subscribe(RoundStatusRequest.class, roundController::onRoundStatusRequest);
+        subscribe(PlayedRoundRequest.class, roundController::onPlayedRound);
+        subscribe(RoundTableRequest.class, roundController::onRoundTable);
     }
     
     @Override

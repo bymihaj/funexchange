@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.view.client.ListDataProvider;
 
 import bymihaj.data.order.LimitOrderResponse;
 import bymihaj.data.order.MarketOrderResponse;
@@ -79,7 +77,6 @@ public class FilledTab extends DataGrid<FilledTab.TradeRecord> {
     }
     
     protected void addRecord(MarketOrderResponse market) {
-     
         for(Trade trade : market.getTrades()) {
             if(provider.stream().filter( r -> r.tradeId == trade.getTid()).collect(Collectors.toList()).isEmpty()) {
                 TradeRecord rec = new TradeRecord();
@@ -91,6 +88,11 @@ public class FilledTab extends DataGrid<FilledTab.TradeRecord> {
                 provider.add(rec);
             }
         }
+        setRowData(provider);
+    }
+    
+    public void reset() {
+        provider.clear();
         setRowData(provider);
     }
     

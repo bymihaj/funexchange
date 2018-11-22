@@ -53,10 +53,12 @@ public class WebClient implements EntryPoint {
   private final Messages messages = GWT.create(Messages.class);
   
   static Logger log = Logger.getGlobal();
+  public static String user;
   
   protected Connection conn;
   protected RootPanel mainScreen;
   protected LoginPane loginPane;
+  
   
 
   public void onModuleLoad() {
@@ -81,7 +83,7 @@ public class WebClient implements EntryPoint {
               mainScreen.add(mainPane);
               */
               
-              LobbyPane lobby = new LobbyPane();
+              LobbyPane lobby = new LobbyPane(conn);
               mainScreen.add(lobby);
               
           }

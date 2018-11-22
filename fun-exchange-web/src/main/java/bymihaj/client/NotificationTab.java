@@ -33,6 +33,13 @@ public class NotificationTab extends DataGrid<String> {
         setRowData(provider);
     }
     
+    public void reset() {
+        provider.clear();
+        setRowData(provider);
+    }
+    
+    
+    
     
 
 }

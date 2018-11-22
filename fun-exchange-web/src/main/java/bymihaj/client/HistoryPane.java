@@ -67,5 +67,10 @@ public class HistoryPane extends DataGrid<TradeHistory>{
         list.add(0, trade);
         setRowData(list);
     }
+    
+    public void reset() {
+        list.clear();
+        setRowData(list);
+    }
 
 }

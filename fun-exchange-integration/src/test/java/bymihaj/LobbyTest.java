@@ -21,7 +21,8 @@ public class LobbyTest {
     }
     
     @Test(timeout=3000)
-    public void availableRoundTest() {
+    public void availableRoundTest() throws InterruptedException {
+        Thread.sleep(100); // waiting round generation
         long tick = System.currentTimeMillis();
         
         client.send(new LobbyRequest());
@@ -66,7 +67,9 @@ public class LobbyTest {
     }
     
     @Test
-    public void registerRoundTest() {
+    public void registerRoundTest() throws InterruptedException {
+        Thread.sleep(100); // waiting round generation
+        
         client.send(new LobbyRequest());
         LobbyResponse lobby = client.last(LobbyResponse.class);
         
@@ -99,12 +102,30 @@ public class LobbyTest {
         LobbyResponse result = client.last(LobbyResponse.class);
         Assert.assertTrue(result.getPending().isEmpty());
     }
+    
     @Test
     public void currentRoundEmptyTest() {
         client.send(new LobbyRequest());
         
         LobbyResponse result = client.last(LobbyResponse.class);
         Assert.assertTrue(result.getCurrent().isEmpty());
+    }
+    
+    @Test
+    public void doubleRegistartionTest() throws InterruptedException {
+        Thread.sleep(100);
+        client.send(new LobbyRequest());
+        LobbyResponse lobby = client.last(LobbyResponse.class);
+        
+        RoundRegisterRequest reg = new RoundRegisterRequest();
+        reg.setJoin(true);
+        reg.setRoundId(lobby.getAvailable().get(0).getRoundId());
+        client.send(reg);
+        client.send(reg);
+        
+        LobbyResponse result = client.last(LobbyResponse.class);
+        Assert.assertEquals(1, result.getPending().size());
+        
     }
 
 }

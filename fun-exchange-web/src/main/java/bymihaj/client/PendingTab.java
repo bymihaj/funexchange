@@ -111,6 +111,11 @@ public class PendingTab extends DataGrid<LimitOrderResponse> {
         resp.getOrders().forEach( l -> onPending(l) );
     }
     
+    public void reset() {
+        provider.clear();
+        setRowData(provider);
+    }
+    
     
     abstract class ButtonColumn extends Column<LimitOrderResponse, String> {
 

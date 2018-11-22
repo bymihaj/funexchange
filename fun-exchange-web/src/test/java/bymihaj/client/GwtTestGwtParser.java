@@ -1,6 +1,16 @@
 package bymihaj.client;
 
+import java.io.IOException;
+import java.io.Writer;
+
+import com.google.gwt.dev.json.JsonArray;
+import com.google.gwt.dev.json.JsonBoolean;
+import com.google.gwt.dev.json.JsonNumber;
+import com.google.gwt.dev.json.JsonObject;
+import com.google.gwt.dev.json.JsonString;
+import com.google.gwt.dev.json.JsonValue;
 import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -21,8 +31,15 @@ import bymihaj.MessageHolder;
 import bymihaj.OrderBook;
 import bymihaj.OrderBookRequest;
 import bymihaj.RoundRegisterRequest;
+import bymihaj.RoundStatus;
+import bymihaj.RoundStatusRequest;
 import bymihaj.Symbol;
+import bymihaj.Team;
 import bymihaj.TradeHistory;
+import bymihaj.data.game.PlayedRoundRequest;
+import bymihaj.data.game.PlayedRoundResponse;
+import bymihaj.data.game.RoundTableRequest;
+import bymihaj.data.game.RoundTableResponse;
 import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.CancelOrderResponse;
 import bymihaj.data.order.LimitOrderRequest;
@@ -387,6 +404,99 @@ public class GwtTestGwtParser extends GWTTestCase {
         assertEquals(startTime, lobby.getAvailable().get(0).getStartTime());
         assertEquals(duration, lobby.getAvailable().get(0).getDuration());
         
+    }
+    
+    public void testRoundStatusFrom() {
+        int roundId = 5;
+        long startTime = 100;
+        long duration = 700;
+        
+        JSONObject round = new JSONObject();
+        round.put("roundId", new JSONNumber(roundId));
+        round.put("startTime", new JSONNumber(startTime));
+        round.put("duration", new JSONNumber(duration));
+        
+        JSONObject jo = new JSONObject();
+        jo.put("round", round);
+        jo.put("isStarted", JSONBoolean.getInstance(true));
+        jo.put("team", new JSONString(Team.SPECTATOR.name()));
+        
+        RoundStatus status = parser.fromJson(jo.toString(), RoundStatus.class);
+        assertEquals(roundId, status.getRound().getRoundId());
+        assertEquals(startTime, status.getRound().getStartTime());
+        assertEquals(duration, status.getRound().getDuration());
+        assertTrue(status.isStarted());
+        assertEquals(Team.SPECTATOR, status.getTeam());
+    }
+    
+    public void testRoundRequestTo() {
+        RoundStatusRequest req = new RoundStatusRequest();
+        String json = parser.toJson(req);
+        assertEquals("{}", json);
+    }
+    
+    public void testPlayedRoundRequestTo() {
+        PlayedRoundRequest req = new PlayedRoundRequest();
+        String json = parser.toJson(req);
+        assertEquals("{}", json);
+    }
+    
+    public void testRoundTableRequestTo() {
+        RoundTableRequest req = new RoundTableRequest();
+        req.setRoundId(5);
+        String json = parser.toJson(req);
+        
+        JSONObject jo = JSONParser.parseStrict(json).isObject();
+        assertEquals(5.0, jo.get("roundId").isNumber().doubleValue());
+    }
+    
+    public void testRoundTableResponseFrom() {
+        long roundId = 5;
+        int position = 1;
+        double amount = 50.0;
+        String user = "TestU";
+        JSONObject rjo = new JSONObject();
+        rjo.put("position", new JSONNumber(position));
+        rjo.put("amount", new JSONNumber(amount));
+        rjo.put("user", new JSONString(user));
+        
+        JSONObject jo = new JSONObject();
+        jo.put("roundId", new JSONNumber(roundId));
+        
+        JSONArray green = new JSONArray();
+        green.set(0, rjo);
+        jo.put("green", green);
+        
+        JSONArray red = new JSONArray();
+        red.set(0, rjo);
+        jo.put("red", red);
+        
+        RoundTableResponse table = parser.fromJson(jo.toString(), RoundTableResponse.class);
+        
+        assertEquals(roundId, table.getRoundId());
+        assertFalse(table.getGreen().isEmpty());
+        assertFalse(table.getRed().isEmpty());
+        
+        assertEquals(position, table.getGreen().get(0).getPosition());
+        assertEquals(amount, table.getGreen().get(0).getAmount());
+        assertEquals(user, table.getGreen().get(0).getUser());
+        
+        assertEquals(position, table.getRed().get(0).getPosition());
+        assertEquals(amount, table.getRed().get(0).getAmount());
+        assertEquals(user, table.getRed().get(0).getUser());
+    }
+    
+    public void testPlayedRoundResponseFrom() {
+        JSONObject jo = new JSONObject();
+        JSONArray array = new JSONArray();
+        array.set(0, new JSONNumber(1));
+        array.set(1, new JSONNumber(2));
+        jo.put("roundList", array);
+        
+        PlayedRoundResponse resp = parser.fromJson(jo.toString(), PlayedRoundResponse.class);
+        assertFalse(resp.getRoundList().isEmpty());
+        assertEquals(1, (long)resp.getRoundList().get(0));
+        assertEquals(2, (long)resp.getRoundList().get(1));
     }
     
 }

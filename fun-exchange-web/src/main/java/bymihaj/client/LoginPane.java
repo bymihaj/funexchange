@@ -37,6 +37,7 @@ public class LoginPane extends VerticalPanel {
             login.setPass(passTbx.getText());
             conn.send(login);
             Window.setTitle(userTbx.getText());
+            WebClient.user = userTbx.getText();
         });
         
         Button requestAccountBtn = new Button();

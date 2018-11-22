@@ -104,4 +104,8 @@ public class LoginController {
         loginedUser.remove(webSocket);
     }
     
+    public void resetPendingOrder() {
+        userStorage.values().forEach( u -> u.resetPendingOrder());
+    }
+    
 }

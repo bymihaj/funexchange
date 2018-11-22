@@ -167,4 +167,9 @@ public class User {
             }
         }
     }
+    
+    public void resetPendingOrder() {
+        orderMap.clear();
+    }
+    
 }

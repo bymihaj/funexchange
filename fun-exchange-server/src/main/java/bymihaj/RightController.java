@@ -1,5 +1,7 @@
 package bymihaj;
 
+import bymihaj.data.game.PlayedRoundRequest;
+import bymihaj.data.game.RoundTableRequest;
 import bymihaj.data.order.CancelOrderRequest;
 import bymihaj.data.order.MarketOrderRequest;
 import bymihaj.data.order.OrderStatusRequest;
@@ -25,6 +27,12 @@ public class RightController {
             return user.isLogined;
         } else if(msg instanceof RoundRegisterRequest) {
             return user.isLogined;
+        } else if(msg instanceof RoundStatusRequest) {
+            return user.isLogined;
+        } else if(msg instanceof PlayedRoundRequest) {
+            return true;
+        } else if(msg instanceof RoundTableRequest) {
+            return true;
         } else {	
             return false;
         } 
