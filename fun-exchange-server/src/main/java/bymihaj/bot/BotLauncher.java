@@ -11,7 +11,7 @@ public class BotLauncher {
     static Logger log = LoggerFactory.getLogger(BotLauncher.class);
     
     public static void main(String...args) {
-        run(600);
+        run(10);
     }
     
     public static void run(int count) {
@@ -23,6 +23,7 @@ public class BotLauncher {
             for(int i = 0 ; i< count; i++) {
                 Thread.sleep(100);
                 new RandomBot(uri);
+                new LimitBot(uri);
             }
         } catch (URISyntaxException e) {
             log.error("URISyntaxException", e);

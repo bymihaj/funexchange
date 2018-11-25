@@ -3,8 +3,10 @@ package bymihaj.client.result;
 import java.util.List;
 
 import com.google.gwt.user.cellview.client.DataGrid;
+import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.TextColumn;
 
+import bymihaj.client.WebClient;
 import bymihaj.data.game.PlayedRecord;
 
 public class TeamTable extends DataGrid<PlayedRecord>{
@@ -37,6 +39,18 @@ public class TeamTable extends DataGrid<PlayedRecord>{
             }
         }, "User");
         setColumnWidth(2, "100px");
+        
+        setRowStyles(new RowStyles<PlayedRecord>() {
+            
+            @Override
+            public String getStyleNames(PlayedRecord row, int rowIndex) {
+                if(WebClient.user.equals(row.getUser())) {
+                    return "me sell";
+                } else {
+                    return new String();
+                }
+            }
+        });
         
         setWidth("300px");
         setHeight("445px");

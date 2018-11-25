@@ -40,3 +40,7 @@ h1 {
 .buy {
 	color: green;
 }
+
+.me {
+	font-weight: bold;
+}
