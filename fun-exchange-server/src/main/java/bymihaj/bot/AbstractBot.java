@@ -12,8 +12,10 @@ import bymihaj.AccountRequest;
 import bymihaj.AccountResponse;
 import bymihaj.AssetsRequest;
 import bymihaj.AssetsResponse;
+import bymihaj.LobbyRequest;
 import bymihaj.LobbyResponse;
 import bymihaj.LoginRequest;
+import bymihaj.LoginResponse;
 import bymihaj.Round;
 import bymihaj.RoundRegisterRequest;
 import bymihaj.RoundStatus;
@@ -42,6 +44,7 @@ abstract public class AbstractBot {
         connection.subscribe(AssetsResponse.class, this::onAssetsResponse);
         connection.subscribe(LobbyResponse.class, this::onLobbyResponse);
         connection.subscribe(RoundStatus.class, this::onRoundStatus);
+        connection.subscribe(LoginResponse.class, this::onLogin);
         connection.connect();
     }
     
@@ -108,5 +111,9 @@ abstract public class AbstractBot {
     }
 
 
+    protected void onLogin(LoginResponse login) {
+        connection.send(new LobbyRequest());
+    }
+    
     abstract public void step();
 }
