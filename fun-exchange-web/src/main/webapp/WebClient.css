@@ -44,3 +44,79 @@ h1 {
 .me {
 	font-weight: bold;
 }
+
+body, html {
+  height: 100%;
+}
+
+.bg { 
+  /* The image used */
+  background-image: url("image/waves@3x.png");
+  background-color: #181c27;
+
+  /* Full height */
+  height: 100%; 
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@font-face { font-family: SFUIText; src: url('font/SFProText-Regular.ttf') format('TrueType');  }
+
+.logo {
+    font-family: SFUIText;
+    font-size: 35px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 0.6;
+    letter-spacing: 7px;
+    text-align: center;
+    color: #43425d;
+}
+
+.welcome-text {
+    font-family: SFUIText;
+    font-size: 18px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.0;
+    letter-spacing: normal;
+    text-align: center;
+    color: #4d4f5c;
+    width: 400px;
+}
+
+.login-input {
+    border-bottom: solid #e9e9f0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    width: 400px;
+    
+    font-family: SFUIText;
+    font-size: 15px;
+    color: #43425d;
+}
+
+.gwt-Button.login-button {
+    width: 185px;
+    height: 50px;
+    border-radius: 4px;
+    font-family: SFUIText;
+    font-size: 18px;
+    background: none;
+}
+
+.gwt-Button.request-acc {
+    color: #4d4f5c;
+    background-color: white;
+}
+
+.gwt-Button.enter-btn {
+    color: white;
+    background-color: #43425d;
+}

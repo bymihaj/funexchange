@@ -1,8 +1,13 @@
 package bymihaj.client;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.DockPanel.DockLayoutConstant;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -20,16 +25,30 @@ public class LoginPane extends VerticalPanel {
     public LoginPane(Connection conn) {
         this.conn = conn;
         
+        setWidth("610px");
+        setHeight("630px");
+        setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+       
+        
+        getElement().getStyle().setBackgroundColor("white");
+        getElement().getStyle().setPaddingBottom(100, Unit.PX);
+        getElement().getStyle().setPaddingTop(100, Unit.PX);
+        
         userTbx = new TextBox();
-        userTbx.setWidth("192px");
+        userTbx.getElement().setPropertyString("placeholder", "User");
+        userTbx.addStyleName("login-input");
+        
         passTbx = new TextBox();
-        passTbx.setWidth("192px");
+        passTbx.getElement().setPropertyString("placeholder", "Password");
+        passTbx.addStyleName("login-input");
         
         setSpacing(5);
         
         
         Button enterBtn = new Button();
-        enterBtn.setWidth("200px");
+        enterBtn.addStyleName("login-button");
+        enterBtn.addStyleName("enter-btn");
         enterBtn.setText("Enter");
         enterBtn.addClickHandler(e -> {
             LoginRequest login = new LoginRequest();
@@ -41,20 +60,35 @@ public class LoginPane extends VerticalPanel {
         });
         
         Button requestAccountBtn = new Button();
-        requestAccountBtn.setWidth("200px");
+        requestAccountBtn.addStyleName("login-button");
+        requestAccountBtn.addStyleName("request-acc");
         requestAccountBtn.setText("Request account");
         requestAccountBtn.addClickHandler(e -> {
             conn.send(new AccountRequest());
         });
         
-        add(new Label(" * Entering"));
-        add(new Label("User"));
+        
+        Label logo = new Label("FUN EXCHENGE");
+        logo.addStyleName("logo");
+        add(logo);
+        
+        Label text = new Label("No real assets required, just sandbox for learning and playing how to work exchange.");
+        text.addStyleName("welcome-text");
+        add(text);
+        
         add(userTbx);
-        add(new Label("Password"));
         add(passTbx);
-        add(enterBtn);
-        add(new HTML("<hr  style=\"width:100%;\" />"));
-        add(requestAccountBtn);
+        
+        
+        DockPanel buttonPane = new DockPanel();
+        buttonPane.setWidth("404px");
+        buttonPane.add(requestAccountBtn, DockPanel.WEST);
+        buttonPane.setCellHorizontalAlignment(requestAccountBtn, HasHorizontalAlignment.ALIGN_LEFT);
+        buttonPane.add(enterBtn, DockPanel.EAST);
+        buttonPane.setCellHorizontalAlignment(enterBtn, HasHorizontalAlignment.ALIGN_RIGHT);
+        add(buttonPane);
+        
+        
         
         conn.subscribe(AccountResponse.class, this::onAccountResponse);
     }

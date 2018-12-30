@@ -27,6 +27,8 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -63,12 +65,19 @@ public class WebClient implements EntryPoint {
 
   public void onModuleLoad() {
       
-      //conn = new Connection("ws://127.0.0.1:7575");
-      conn = new Connection("ws://159.89.0.62:7575");
+      conn = new Connection("ws://127.0.0.1:7575");
+      //conn = new Connection("ws://159.89.0.62:7575");
             
       loginPane = new LoginPane(conn);
       mainScreen = RootPanel.get("allContent");
-      mainScreen.add(loginPane);
+      
+      VerticalPanel vrt = new VerticalPanel();
+      vrt.setWidth("100%");
+      vrt.setHeight("100%");
+      vrt.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+      vrt.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+      vrt.add(loginPane);
+      mainScreen.add(vrt);
       
       conn.subscribe(LoginResponse.class, this::onLoginResponse);
   }
