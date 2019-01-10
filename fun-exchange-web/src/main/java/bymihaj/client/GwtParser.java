@@ -163,10 +163,7 @@ public class GwtParser implements IJsonParser{
             JSONObject jo = JSONParser.parseStrict(json).isObject();
             PlayedRoundResponse resp = new PlayedRoundResponse();
             JSONArray array = jo.get("roundList").isArray();
-            for(int i = 0; i < array.size(); i++) {
-                JSONNumber number = array.get(i).isNumber();
-                resp.getRoundList().add((long)number.doubleValue());
-            }
+            resp.setRoundList(parseRound(array));
             return (T) resp;
         }
         

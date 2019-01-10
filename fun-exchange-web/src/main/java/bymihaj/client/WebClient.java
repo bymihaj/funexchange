@@ -31,9 +31,11 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -60,7 +62,8 @@ public class WebClient implements EntryPoint {
   protected Connection conn;
   protected RootPanel mainScreen;
   protected LoginPane loginPane;
-  
+  protected VerticalPanel loginHolder;
+  static protected Widget current;
   
 
   public void onModuleLoad() {
@@ -68,38 +71,77 @@ public class WebClient implements EntryPoint {
       conn = new Connection("ws://127.0.0.1:7575");
       //conn = new Connection("ws://159.89.0.62:7575");
             
-      loginPane = new LoginPane(conn);
-      mainScreen = RootPanel.get("allContent");
+      //loginPane = new LoginPane(conn);
+      //mainScreen = RootPanel.get("allContent");
       
-      VerticalPanel vrt = new VerticalPanel();
-      vrt.setWidth("100%");
-      vrt.setHeight("100%");
-      vrt.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-      vrt.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-      vrt.add(loginPane);
-      mainScreen.add(vrt);
+      /*
+      loginHolder = new VerticalPanel();
+      loginHolder.setWidth("100%");
+      loginHolder.setHeight("100%");
+      loginHolder.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+      loginHolder.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+      loginHolder.add(loginPane);
+      */
+      //mainScreen.add(loginHolder);
+      
+      switchPane(new LoginPane(conn), false);
       
       conn.subscribe(LoginResponse.class, this::onLoginResponse);
   }
   
   public void onLoginResponse(LoginResponse loginResponse) {
       if(LoginResponse.Status.OK.equals(loginResponse.getStatus())) {
+          RootPanel.getBodyElement().getStyle().setBackgroundImage("none");
+          switchPane(new LobbyPane(conn), true);
           
-          mainScreen.remove(loginPane);
-          if(mainScreen.getWidgetCount() == 0) { 
+          //mainScreen.remove(loginHolder);
+          //if(RootPanel.get("allContent").getWidgetCount() == 0) { 
               /*
               MainPane mainPane = new MainPane(conn);
               mainScreen.add(mainPane);
               */
               
-              LobbyPane lobby = new LobbyPane(conn);
-              mainScreen.add(lobby);
               
-          }
+              //RootPanel.getBodyElement().getStyle().setBackgroundImage("none");
+              /*
+              // TODO re-work as component
+              LobbyPane lobby = new LobbyPane(conn);
+              VerticalPanel lobbyHolder = new VerticalPanel();
+              lobbyHolder.setWidth("100%");
+              lobbyHolder.setHeight("100%");
+              lobbyHolder.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+              lobbyHolder.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+              lobbyHolder.add(lobby);
+              
+              mainScreen.add(lobbyHolder);
+              */
+              switchPane(new LobbyPane(conn), true);
+              
+          //}
          
       } else {
           Window.alert("Login rejected, wrong user/pass");
       }
+  }
+  
+  static public void switchPane(Widget widget, boolean top) {
+      RootPanel mainScreen = RootPanel.get("allContent");
+      if(current != null) {
+          mainScreen.remove(current); 
+      }
+      
+      VerticalPanel holder = new VerticalPanel();
+      holder.setWidth("100%");
+      holder.setHeight("100%");
+      holder.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+      if(top) {
+          holder.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+      } else {
+          holder.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+      }
+      holder.add(widget);
+      mainScreen.add(holder);
+      current = holder;
   }
   
   /**

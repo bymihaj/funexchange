@@ -12,9 +12,11 @@ public class TablePane extends HorizontalPanel {
     protected TeamTable redTable;
     
     public TablePane() {
+        addStyleName("region-pane");
         VerticalPanel greenPane = new VerticalPanel();
         greenPane.setSpacing(10);
         Label greenLabel = new Label("Green team");
+        greenLabel.addStyleName("region-title-team-result");
         greenPane.add(greenLabel);
         greenTable = new TeamTable();
         greenPane.add(greenTable);
@@ -22,7 +24,9 @@ public class TablePane extends HorizontalPanel {
         
         VerticalPanel redPane = new VerticalPanel();
         redPane.setSpacing(10);
-        redPane.add(new Label("Red team"));
+        Label redLabel = new Label("Red team");
+        redLabel.addStyleName("region-title-team-result");
+        redPane.add(redLabel);
         redTable = new TeamTable();
         redPane.add(redTable);
         add(redPane);

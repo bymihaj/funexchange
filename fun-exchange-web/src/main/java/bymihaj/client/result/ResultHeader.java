@@ -13,14 +13,18 @@ public class ResultHeader extends DockPanel {
 
     public ResultHeader(Connection connection) {
         setSpacing(20);
-        setSize("800px", "65px");
+        setSize("1010px", "65px");
         
-        add(new Label("User: "+WebClient.user), DockPanel.WEST);
+        Label label = new Label(WebClient.user);
+        label.addStyleName("user-nick-label");
+        add(label, DockPanel.WEST);
         
         Button button = new Button("Lobby");
+        button.addStyleName("lobby-button");
         button.addClickHandler(e -> {
-            RootPanel.get("allContent").clear();
-            RootPanel.get("allContent").add(new LobbyPane(connection));
+            //RootPanel.get("allContent").clear();
+            //RootPanel.get("allContent").add(new LobbyPane(connection));
+            WebClient.switchPane(new LobbyPane(connection), true);
         });
         add(button, DockPanel.EAST);
         setCellHorizontalAlignment(button, ALIGN_RIGHT);

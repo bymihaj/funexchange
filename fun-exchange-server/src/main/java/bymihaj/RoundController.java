@@ -252,7 +252,9 @@ public class RoundController {
     
     public void onPlayedRound(User user, PlayedRoundRequest req) {
         PlayedRoundResponse resp = new PlayedRoundResponse();
-        resp.setRoundList(new ArrayList<>(resultMap.keySet()));
+        List<Round> list = new ArrayList<>();
+        resultMap.keySet().forEach( id -> list.add(roundMap.get(id)));
+        resp.setRoundList(list);
         user.send(resp);
     }
     

@@ -45,7 +45,7 @@ public class TeamTable extends DataGrid<PlayedRecord>{
             @Override
             public String getStyleNames(PlayedRecord row, int rowIndex) {
                 if(WebClient.user.equals(row.getUser())) {
-                    return "me sell";
+                    return "identity-user";
                 } else {
                     return new String();
                 }
@@ -53,7 +53,8 @@ public class TeamTable extends DataGrid<PlayedRecord>{
         });
         
         setWidth("300px");
-        setHeight("445px");
+        setHeight("482px");
+        addStyleName("result-table");
     }
     
     public void load(List<PlayedRecord> list) {

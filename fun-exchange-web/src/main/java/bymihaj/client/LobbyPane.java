@@ -1,5 +1,6 @@
 package bymihaj.client;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -20,31 +21,33 @@ public class LobbyPane extends DockPanel {
     
     public LobbyPane(Connection connection) {
         this.conneciton = connection;
+        setSpacing(20);
         LobbyHeader profilePane = new LobbyHeader(connection);
-        DecoratorPanel profileDec = new DecoratorPanel();
-        profileDec.setWidget(profilePane);
-        add(profileDec, DockPanel.NORTH);
+        //DecoratorPanel profileDec = new DecoratorPanel();
+        //profileDec.setWidget(profilePane);
+        add(profilePane, DockPanel.NORTH);
         
-        availablePane = new RoundHolder("Available rounds");
-        DecoratorPanel availableDec = new DecoratorPanel();
-        availableDec.setWidget(availablePane);
-        add(availableDec, DockPanel.WEST);
+        availablePane = new AvailableRoundHolder("Available rounds", connection); //new RoundHolder("Available rounds", connection);
+        //DecoratorPanel availableDec = new DecoratorPanel();
+        //availableDec.setWidget(availablePane);
+        add(availablePane, DockPanel.WEST);
         
-        registeredPane = new RoundHolder("Registered rounds");
-        DecoratorPanel registeredDec = new DecoratorPanel();
-        registeredDec.setWidget(registeredPane);
-        add(registeredDec, DockPanel.CENTER);
+        registeredPane = new RegisteredRoundHolder("Registered rounds", connection);//new RoundHolder("Registered rounds", connection);
+        //DecoratorPanel registeredDec = new DecoratorPanel();
+        //registeredDec.setWidget(registeredPane);
+        add(registeredPane, DockPanel.CENTER);
         
-        currentPane = new RoundHolder("Current pane");
-        DecoratorPanel currentDec = new DecoratorPanel();
-        currentDec.setWidget(currentPane);
-        add(currentDec, DockPanel.EAST);
+        currentPane = new ActiveRoundHolder("Active rounds", connection);// new RoundHolder("Current pane", connection);
+        //DecoratorPanel currentDec = new DecoratorPanel();
+        //currentDec.setWidget(currentPane);
+        add(currentPane, DockPanel.EAST);
         
         connection.subscribe(LobbyResponse.class, this::onLobby);
         connection.send(new LobbyRequest());
     }
     
     public void onLobby(LobbyResponse response) {
+        /*
         availablePane.clearRounds();
         for(Round round : response.getAvailable()) {
             Button button = new Button("Join");
@@ -56,7 +59,10 @@ public class LobbyPane extends DockPanel {
             });
             availablePane.addRound(round, button);
         }
+        */
+        availablePane.addRounds(response.getAvailable());
         
+        /*
         registeredPane.clearRounds();
         for(Round round : response.getPending()) {
             Button button = new Button("Cancel");
@@ -68,7 +74,10 @@ public class LobbyPane extends DockPanel {
             });
             registeredPane.addRound(round, button);
         }
+        */
+        registeredPane.addRounds(response.getPending());
         
+        /*
         currentPane.clearRounds();
         for(Round round : response.getCurrent()) {
             Button button = new Button("Enter");
@@ -78,6 +87,8 @@ public class LobbyPane extends DockPanel {
             });
             currentPane.addRound(round, button);
         }
+        */
+        currentPane.addRounds(response.getCurrent());
     }
 
 }

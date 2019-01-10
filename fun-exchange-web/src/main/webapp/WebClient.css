@@ -120,3 +120,155 @@ body, html {
     color: white;
     background-color: #43425d;
 }
+
+.user-nick-label {
+    font-family: SFUIText;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1.2;
+    color: white;
+}
+
+.gwt-Button.result-button {
+    background: none;
+    background-color: rgb(70, 74, 82);
+    border-radius: 27px;
+    border-width: 0px;
+    width: 217px;
+    height: 45px;
+    color: white;
+    font-family: SFUIText;
+    font-size: 16px;
+}
+
+.region-pane {
+    border-radius: 5px;
+    background-color: #242a3a;
+}
+
+.region-title {
+    font-family: SFUIText;
+    font-size: 16px;
+    color: white;
+    padding: 20px;
+}
+
+
+.table-header .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridHeader {
+    font-family: SFUIText;
+    font-size: 13x;
+    font-weight: normal;
+    color: #8c8e97;
+    text-shadow: none;
+}
+
+.table-header .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridCell {
+    font-family: SFUIText;
+    font-size: 13px;
+    font-weight: normal;
+    color: white;
+    background-color: #242a3a;
+    border: none;
+    height: 50px;
+}
+
+.join-button button {
+    width: 50px;
+    height: 24px;
+    border-radius: 14px;
+    background-color: #443df2;
+    color: white;
+    font-family: SFUIText;
+    font-size: 11px;
+    border: none;
+}
+
+.cancel-button button {
+    width: 69px;
+    height: 24px;
+    border-radius: 14px;
+    background-color: #f23d3d;
+    color: white;
+    font-family: SFUIText;
+    font-size: 11px;
+    border: none;
+}
+
+.enter-round-button button {
+    width: 69px;
+    height: 24px;
+    border-radius: 14px;
+    background-color: #ff8820;
+    color: white;
+    font-family: SFUIText;
+    font-size: 11px;
+    border: none;
+}
+
+.gwt-Button.lobby-button {
+    background: none;
+    background-color: rgb(70, 74, 82);
+    border-radius: 27px;
+    border-width: 0px;
+    width: 142px;
+    height: 45px;
+    color: white;
+    font-family: SFUIText;
+    font-size: 16px;
+}
+
+.result-table .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridHeader {
+    font-family: SFUIText;
+    font-size: 13x;
+    font-weight: normal;
+    color: #8c8e97;
+    text-shadow: none;
+}
+
+.result-table .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridCell {
+    font-family: SFUIText;
+    font-size: 13px;
+    font-weight: normal;
+    color: white;
+    background-color: #242a3a;
+    border: none;
+    height: 50px;
+}
+
+.result-table .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridSelectedRowCell {
+    background-color: rgb(97, 113, 156);
+}
+
+.region-title-team-result {
+    font-family: SFUIText;
+    font-size: 16px;
+    color: white;
+    padding: 10px;
+}
+
+.result-table .identity-user .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridCell {
+    font-family: SFUIText;
+    font-size: 13px;
+    font-weight: bold;
+    color: #00ffac;
+    background-color: #242a3a;
+    border: none;
+    height: 50px;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #181c27;
+  border-radius: 9px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #767883; 
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
