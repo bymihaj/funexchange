@@ -87,7 +87,7 @@ abstract public class AbstractBot {
     
     public void onRoundStatus(RoundStatus status) {
         isBuyer = Team.GREEN.equals(status.getTeam());
-        log.info("I am {} team pleayer", status.getTeam());
+        log.info("{} is {} team pleayer", this.getClass().getSimpleName(), status.getTeam());
     }
     
     protected void startTrading() {

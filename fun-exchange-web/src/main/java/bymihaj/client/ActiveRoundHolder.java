@@ -25,8 +25,9 @@ public class ActiveRoundHolder extends RoundHolder {
                 @Override
                 public void update(int index, Round object, String value) {
                     // TODO Auto-generated method stub
-                    RootPanel.get("allContent").clear();
-                    RootPanel.get("allContent").add(new MainPane(conn));
+                    //RootPanel.get("allContent").clear();
+                    //RootPanel.get("allContent").add(new MainPane(conn));
+                    WebClient.switchPane(new MainPane(conn), true);
                 }
             });
             setCellStyleNames("enter-round-button");

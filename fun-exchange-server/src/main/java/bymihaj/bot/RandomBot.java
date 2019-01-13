@@ -42,11 +42,11 @@ public class RandomBot extends AbstractBot {
         super(serverUri);
     }
     
-    
+    /*
     public void onRoundStatus(RoundStatus status) {
         isBuyer = Team.GREEN.equals(status.getTeam());
         log.info("I am {} team pleayer", status.getTeam());
-    }
+    }*/
     
     public void step() {
         log.info("Trade some");

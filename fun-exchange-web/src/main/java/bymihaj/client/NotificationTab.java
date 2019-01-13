@@ -14,6 +14,7 @@ public class NotificationTab extends DataGrid<String> {
     protected List<String> provider;
     
     public NotificationTab() {
+        addStyleName("trade-table");
         provider = new ArrayList<>();
         addColumn(new TextColumn<String>() {
 
@@ -25,7 +26,7 @@ public class NotificationTab extends DataGrid<String> {
         setColumnWidth(0, "410px");
         
         setWidth("425px");
-        setHeight("322px");
+        setHeight("280px");
     }
     
     public void onReject(RejectOrderResponse reject) {

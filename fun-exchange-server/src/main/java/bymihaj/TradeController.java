@@ -298,7 +298,7 @@ public class TradeController {
                 liqudityPrivider.sendAssests();
 
                 TradeHistory history = new TradeHistory();
-                history.setDateTime(new Date().toString());
+                history.setDateTime(new Date().getTime());
                 history.setAmount(filled.doubleValue());
                 history.setPrice(priceLevel.doubleValue());
                 history.setSide(order.getSide());

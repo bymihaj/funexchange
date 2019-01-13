@@ -272,3 +272,111 @@ body, html {
 ::-webkit-scrollbar-thumb:hover {
   background: #555; 
 }
+
+
+.trade-round-id {
+  font-family: SFUIText;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+.trade-timeout {
+    font-family: SFUIText;
+    font-size: 16px;
+    font-weight: normal;
+    color: white;
+    width: 60px;
+}
+
+.trade-minor-text {
+    font-family: SFUIText;
+    font-size: 16px;
+    color: #a0a0a1;
+}
+
+
+.trade-table .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridHeader {
+    font-family: SFUIText;
+    font-size: 13x;
+    font-weight: normal;
+    color: #8c8e97;
+    text-shadow: none;
+}
+
+.trade-table .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridCell {
+    font-family: SFUIText;
+    font-size: 13px;
+    font-weight: normal;
+    color: white;
+    background-color: #242a3a;
+    border: none;
+    height: 22px;
+    
+    border-bottom: solid #5b5f6a;
+    border-width: 1px;
+}
+
+.trade-table .sell .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridCell {
+    color: #ffa7be;
+}
+
+.trade-table .buy .com-google-gwt-user-cellview-client-DataGrid-Style-dataGridCell {
+    color: #81ffa3;
+}
+
+.gwt-TextBox.order-input {
+    width: 130px;
+    height: 34px;
+    background-color: rgb(82, 87, 98);
+    border: none;
+    
+    padding-left: 8px;
+    font-family: SFUIText;
+    font-size: 13px;
+    color: white;
+}
+
+.gwt-Button.order-button {
+    width: 130px;
+    height: 40px;
+    border-radius: 50px;
+    border-width: 0px;
+    
+    font-family: SFUIText;
+    font-size: 11px;
+    color: white;
+    background: none;
+}
+
+.gwt-Button.order-market {
+    background-color: #1c4fb9;
+}   
+
+.gwt-Button.order-limit {
+    background-color: #ff8921;
+}   
+
+.custom-tab .gwt-TabBar {
+    border-bottom: solid #5b5f6a;
+}
+
+.custom-tab .gwt-TabBar .gwt-TabBarItem {
+    background: none;
+}
+
+.custom-tab .gwt-TabBarItem .gwt-Label {
+    color: white;
+    font-family: SFUIText;
+    font-size: 16px;
+    font-weight: 400;
+    background: none;
+}
+
+.custom-tab .gwt-TabBarItem.gwt-TabBarItem-selected {
+    border-bottom: solid #26f0ff;
+}
+
+.custom-tab .gwt-TabPanelBottom {
+    border: none;
+}

@@ -11,6 +11,7 @@ import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.view.client.ListDataProvider;
 
+// TODO remove 
 public class OrderBookSideTable extends DataGrid<Map.Entry<Double, Double>> {
 
     //protected List<Map.Entry<Double, Double>> provider;

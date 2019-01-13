@@ -344,11 +344,11 @@ public class GwtTestGwtParser extends GWTTestCase {
     }
     
     public void testHistoryFrom() {
-        String json = "{\"dateTime\":\"Wed Oct 17 10:33:46 EEST 2018\",\"amount\":10.0,\"price\":3.3,\"side\":\"BUY\"}";
+        String json = "{\"dateTime\":300,\"amount\":10.0,\"price\":3.3,\"side\":\"BUY\"}";
         
         TradeHistory trade = parser.fromJson(json, TradeHistory.class);
         
-        assertEquals("Wed Oct 17 10:33:46 EEST 2018", trade.getDateTime());
+        assertEquals(300, trade.getDateTime());
         assertEquals(10.0, trade.getAmount());
         assertEquals(3.3, trade.getPrice());
         assertEquals(OrderSide.BUY, trade.getSide());

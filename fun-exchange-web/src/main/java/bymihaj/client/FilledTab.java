@@ -17,6 +17,7 @@ public class FilledTab extends DataGrid<FilledTab.TradeRecord> {
     protected List<TradeRecord> provider;
     
     public FilledTab() {
+        addStyleName("trade-table");
         provider = new ArrayList<>();
         addColumn(new TextColumn<TradeRecord>() {
 
@@ -64,7 +65,7 @@ public class FilledTab extends DataGrid<FilledTab.TradeRecord> {
         setColumnWidth(4, "80px");
         
         setWidth("425px");
-        setHeight("322px");
+        setHeight("280px");
         
     }
     

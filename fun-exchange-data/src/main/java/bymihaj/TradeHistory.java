@@ -4,15 +4,15 @@ import bymihaj.data.order.OrderSide;
 
 public class TradeHistory {
     
-    protected String dateTime;
+    protected long dateTime;
     protected double amount;
     protected double price;
     private OrderSide side;
     
-    public String getDateTime() {
+    public long getDateTime() {
         return dateTime;
     }
-    public void setDateTime(String dateTime) {
+    public void setDateTime(long dateTime) {
         this.dateTime = dateTime;
     }
     public double getAmount() {

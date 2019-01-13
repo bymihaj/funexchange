@@ -53,7 +53,7 @@ public class TeamTable extends DataGrid<PlayedRecord>{
         });
         
         setWidth("300px");
-        setHeight("482px");
+        setHeight("466px");
         addStyleName("result-table");
     }
     

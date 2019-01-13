@@ -112,7 +112,7 @@ public class GwtParser implements IJsonParser{
         } else if(TradeHistory.class.equals(classOfT)) {
             TradeHistory trade = new TradeHistory();
             JSONObject jo = JSONParser.parseStrict(json).isObject();
-            trade.setDateTime(jo.get("dateTime").isString().stringValue());
+            trade.setDateTime((long) jo.get("dateTime").isNumber().doubleValue());
             trade.setAmount(jo.get("amount").isNumber().doubleValue());
             trade.setPrice(jo.get("price").isNumber().doubleValue());
             trade.setSide(OrderSide.valueOf(jo.get("side").isString().stringValue()));

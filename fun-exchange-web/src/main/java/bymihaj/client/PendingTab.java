@@ -24,6 +24,7 @@ public class PendingTab extends DataGrid<LimitOrderResponse> {
     protected List<LimitOrderResponse> provider;
     
     public PendingTab(Connection conn) {
+        addStyleName("trade-table");
         provider = new ArrayList<>();
         this.conn = conn;
         addColumn(new TextColumn<LimitOrderResponse>() {
@@ -87,7 +88,7 @@ public class PendingTab extends DataGrid<LimitOrderResponse> {
        
         
         setWidth("425px");
-        setHeight("322px");
+        setHeight("280px");
         
         conn.send(new OrderStatusRequest());
     }
