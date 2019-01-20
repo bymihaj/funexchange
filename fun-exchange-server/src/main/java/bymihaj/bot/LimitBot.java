@@ -31,11 +31,13 @@ public class LimitBot extends AbstractBot {
         log.info("Try to do step");
         
         if(lastAssets == null) {
+            log.info("{} has null assets", userName);
             return;
         }
         
         if(book == null) {
             connection.send(new OrderBookRequest());
+            log.info("{} has null order book", userName);
             return;
         }
         
@@ -49,7 +51,9 @@ public class LimitBot extends AbstractBot {
         }
         
         if(amount < 10.0) {
-            log.info("No money");
+            log.info("{} has no money MON:{} STK:{}", userName, 
+                    lastAssets.getProperties().get(Symbol.MON).getAmount().toPlainString(), 
+                    lastAssets.getProperties().get(Symbol.STK).getAmount().toPlainString());
             return;
         }
         

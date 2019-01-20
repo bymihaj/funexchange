@@ -34,6 +34,7 @@ abstract public class AbstractBot {
     protected boolean roundStarted = false;
     protected Random random = new Random();
     protected boolean isBuyer;
+    protected String userName;
     
     
     public AbstractBot(URI serverUri) {
@@ -58,6 +59,7 @@ abstract public class AbstractBot {
         login.setUser(resp.getUser());
         login.setPass(resp.getPass());
         connection.send(login);
+        userName = resp.getUser();
     }
     
     public void onAssetsResponse(AssetsResponse assets) {
@@ -88,6 +90,7 @@ abstract public class AbstractBot {
     public void onRoundStatus(RoundStatus status) {
         isBuyer = Team.GREEN.equals(status.getTeam());
         log.info("{} is {} team pleayer", this.getClass().getSimpleName(), status.getTeam());
+        connection.send(new AssetsRequest());
     }
     
     protected void startTrading() {

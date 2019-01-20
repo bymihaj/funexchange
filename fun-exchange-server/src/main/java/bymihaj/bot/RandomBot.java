@@ -49,7 +49,6 @@ public class RandomBot extends AbstractBot {
     }*/
     
     public void step() {
-        log.info("Trade some");
         if (lastAssets != null) {
 
             
@@ -97,6 +96,8 @@ public class RandomBot extends AbstractBot {
                 limit.setInstrument(Instrument.STKMON);
                 connection.send(limit);
             }
+        } else {
+            log.info("{} has null assets", userName);
         }
                 
         connection.send(new AssetsRequest());

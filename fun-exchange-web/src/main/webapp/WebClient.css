@@ -1,5 +1,6 @@
 /** Add css rules here for your application. */
 
+* {outline: none;}
 
 /** Example rules used by the template application (remove for your app) */
 h1 {
