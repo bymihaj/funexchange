@@ -381,3 +381,9 @@ body, html {
 .custom-tab .gwt-TabPanelBottom {
     border: none;
 }
+
+.footer-label {
+    font-family: SFUIText;
+    font-size: 15px;
+    color: #86868f;
+}
