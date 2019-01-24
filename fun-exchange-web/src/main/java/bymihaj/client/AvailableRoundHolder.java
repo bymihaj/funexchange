@@ -8,9 +8,11 @@ import bymihaj.Round;
 import bymihaj.RoundRegisterRequest;
 
 public class AvailableRoundHolder extends RoundHolder {
+    
+    static String HELP = "List of available rounds or, another words, trade sessions . All players will start with equals amount on account. Possible to join to round only before starting.";
 
     public AvailableRoundHolder(String name, Connection conn) {
-        super(name, conn);
+        super(name, HELP, conn);
         
         grid.addColumn(new JoinButton());
         grid.setColumnWidth(3, "80px");

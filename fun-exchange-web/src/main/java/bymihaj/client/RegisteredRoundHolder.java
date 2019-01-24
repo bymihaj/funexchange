@@ -10,8 +10,10 @@ import bymihaj.RoundRegisterRequest;
 
 public class RegisteredRoundHolder extends RoundHolder {
 
+    static String HELP ="List of subcribed round, just wait a starting time.";
+    
     public RegisteredRoundHolder(String name, Connection conn) {
-        super(name, conn);
+        super(name, HELP, conn);
         grid.addColumn(new CancelButton());
         grid.setColumnWidth(3, "80px");
     }

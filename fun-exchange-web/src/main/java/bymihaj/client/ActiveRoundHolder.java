@@ -9,9 +9,11 @@ import bymihaj.Round;
 
 
 public class ActiveRoundHolder extends RoundHolder {
+    
+    static String HELP = "Display current started round if was joined previously.";
 
     public ActiveRoundHolder(String name, Connection conn) {
-        super(name, conn);
+        super(name, HELP, conn);
         grid.addColumn(new EnterButton());
         grid.setColumnWidth(3, "80px");
     }

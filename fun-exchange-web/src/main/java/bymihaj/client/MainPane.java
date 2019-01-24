@@ -25,6 +25,10 @@ import bymihaj.data.order.RejectOrderResponse;
 
 public class MainPane extends VerticalPanel {
     
+    static String SALE = "History of trading. Green color means execution market buy order or filling limit order as market. Red means sell side with some condition.";
+    static String TRADE = "Place your demands to market as market or limit order. Market order will be executed immediately with price based on Order Book. Limit order allows only predefined price of better for execution.";
+    static String BOOK = "Actual state of market. Amount price show an aggregated sum of order on one price level.";
+    
     protected Connection conn;
     protected HistoryPane history;
     protected AssetsPane assets;
@@ -41,9 +45,9 @@ public class MainPane extends VerticalPanel {
         VerticalPanel tradeHolder = new VerticalPanel();
         tradeHolder.addStyleName("region-pane");
         tradeHolder.setSize("480px", "300px");
-        Label tradeLabel = new Label("Place order");
-        tradeLabel.addStyleName("region-title");
-        tradeHolder.add(tradeLabel);
+        //Label tradeLabel = new Label("Place order");
+        //tradeLabel.addStyleName("region-title");
+        tradeHolder.add(new RegionHeader("Place order", TRADE, "480px"));
         tradeHolder.add(orderPane);
         tradeHolder.setCellHorizontalAlignment(orderPane, HasHorizontalAlignment.ALIGN_CENTER);
         
@@ -60,9 +64,9 @@ public class MainPane extends VerticalPanel {
         VerticalPanel orderBookHolder = new VerticalPanel();
         orderBookHolder.addStyleName("region-pane");
         orderBookHolder.setSize("440px", "660px");
-        Label orderBookLabel = new Label("Order book");
-        orderBookLabel.addStyleName("region-title");
-        orderBookHolder.add(orderBookLabel);
+        //Label orderBookLabel = new Label("Order book");
+        //orderBookLabel.addStyleName("region-title");
+        orderBookHolder.add(new RegionHeader("Order book", BOOK, "440px"));
         orderBookHolder.add(orderBook);
         orderBookHolder.setCellHorizontalAlignment(orderBook, HasHorizontalAlignment.ALIGN_CENTER);
         
@@ -76,9 +80,12 @@ public class MainPane extends VerticalPanel {
         VerticalPanel historyHolder = new VerticalPanel();
         historyHolder.addStyleName("region-pane");
         historyHolder.setSize("440px", "660px");
-        Label historyTitle = new Label("Sales");
-        historyTitle.addStyleName("region-title");
-        historyHolder.add(historyTitle);
+        
+        
+        //Label historyTitle = new Label("Sales");
+        //historyTitle.addStyleName("region-title");
+        historyHolder.add(new RegionHeader("Sales", SALE, "440px"));
+        
         historyHolder.add(history);
         historyHolder.setCellHorizontalAlignment(history, HasHorizontalAlignment.ALIGN_CENTER);
         

@@ -8,11 +8,15 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.DockPanel.DockLayoutConstant;
 
 import bymihaj.Round;
 
@@ -26,14 +30,35 @@ abstract public class RoundHolder extends VerticalPanel {
     protected Connection conn;
     
     
-    public RoundHolder(String name, Connection conn) {
+    public RoundHolder(String name, String help, Connection conn) {
         //provider = new ArrayList<>();
         this.conn = conn;
         addStyleName("region-pane");
         setSize("500px", "367px");
+        
+        /*
         Label label = new Label(name);
         label.addStyleName("region-title");
-        add(label);
+        //add(label);
+        
+        Image helpIcon = new Image("image/help.png");
+        helpIcon.addStyleName("region-help");
+        helpIcon.addClickHandler(e -> {
+            PopupPanel pp = new PopupPanel(true);
+            pp.setWidget(new Label("Just for test"));
+            pp.setPopupPosition(helpIcon.getAbsoluteLeft() + 60, helpIcon.getAbsoluteTop());
+            pp.show();
+        });
+        
+        //add(helpIcon);
+        DockPanel titleHeader = new DockPanel();
+        titleHeader.add(label, DockPanel.WEST);
+        titleHeader.add(helpIcon, DockPanel.EAST);
+        titleHeader.setCellHorizontalAlignment(helpIcon, HasHorizontalAlignment.ALIGN_RIGHT);
+        titleHeader.setWidth("500px");
+        add(titleHeader);
+        */
+        add(new RegionHeader(name, help, "500px"));
         
         //holder = new VerticalPanel();
         //add(holder);

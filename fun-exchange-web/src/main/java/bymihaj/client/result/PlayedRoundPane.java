@@ -14,12 +14,16 @@ import com.google.gwt.view.client.SingleSelectionModel;
 
 import bymihaj.Round;
 import bymihaj.client.Connection;
+import bymihaj.client.RegionHeader;
 import bymihaj.client.RoundHolder;
 import bymihaj.data.game.PlayedRoundRequest;
 import bymihaj.data.game.PlayedRoundResponse;
 import bymihaj.data.game.RoundTableRequest;
 
 public class PlayedRoundPane extends VerticalPanel {
+    
+    static String HELP ="List of all played round, that happens on server. Selecting one of them will display details."
+            +" There are final balance of goal asset for all player applied to round and splitted by team.";
     
     //protected List<String> list;
     protected DataGrid<Round> grid;
@@ -30,7 +34,7 @@ public class PlayedRoundPane extends VerticalPanel {
         
         Label label = new Label("Played rounds");
         label.addStyleName("region-title");
-        add(label);
+        add(new RegionHeader("Played rounds", HELP, "340px"));
         
         grid = new DataGrid<Round>();
         grid.setSize("320px", "470px");

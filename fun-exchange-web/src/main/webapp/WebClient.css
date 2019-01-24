@@ -387,3 +387,16 @@ body, html {
     font-size: 15px;
     color: #86868f;
 }
+
+.region-help {
+    padding: 13px;
+}
+
+.region-help-text {
+    font-family: SFUIText;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+    color: 181c27; 
+    width: 300px;
+}
