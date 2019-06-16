@@ -9,7 +9,7 @@ public class RoundConfig {
     
     public RoundConfig() {
         availableCount = 4;
-        duration = TimeUnit.MINUTES.toMillis(30);
+        duration = TimeUnit.MINUTES.toMillis(5);
     }
     
     public int getAvailableCount() {

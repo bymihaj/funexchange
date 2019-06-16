@@ -16,8 +16,7 @@ public class BotLauncher {
     
     public static void run(int count) {
         try {
-            URI uri = new URI("ws://159.89.0.62:7575");
-            //URI uri = new URI("ws://127.0.0.1:7575");
+            URI uri = new URI("ws://127.0.0.1:7575");
             
             
             for(int i = 0 ; i< count; i++) {

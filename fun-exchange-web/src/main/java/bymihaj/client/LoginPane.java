@@ -68,7 +68,7 @@ public class LoginPane extends VerticalPanel {
         });
         
         
-        Label logo = new Label("FUN EXCHENGE");
+        Label logo = new Label("FUN EXCHANGE");
         logo.addStyleName("logo");
         add(logo);
         
